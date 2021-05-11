@@ -4,6 +4,8 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
 
+print("ddd")
+
 #create a flask instance
 app = Flask(__name__)
 
