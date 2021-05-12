@@ -1,0 +1,95 @@
+{
+  "models": [
+    {
+      "name": "userLogin",
+      "model": {
+        "userName": "tomer111",
+        "password": "12345678"
+      }
+    },
+    {
+      "name": "createUserModel",
+      "model": {
+        "userName": "tomer",
+        "password": "12345678",
+        "email": "oriel97@gmail.com",
+        "location": "Rishon-Letzion",
+        "gender": "Male",
+        "dateOfBirth": "1995-05-04"
+      }
+    },
+    {
+      "name": "barberModel",
+      "model": {
+        "barberName": "Tomer sultinian", // string
+        "location": "Netanya", // string
+        "grade": 5 // 1 -5 number
+        "followers": 100 // number
+        "picture": 2 // svg
+        "summary": {
+          "time": "2021-05-11" // current time
+          "sentence": " i do barber" // string
+          "headline": "headline" // string
+        }
+    }
+    },
+    {
+      "name": "aboutModel",
+      "model": {
+        "headline": "about", // string
+        "summary": "the app is...."// string
+      }
+    },
+    {
+      "name": "notificationModel",
+      "model": {
+        "notification":{
+          "summary": "eeee", // string
+          "nameOfTheBarber": "TomerSultinian", // string
+          "messege": "fbla bla" //string
+        }, "the app is...."// string
+      }
+    },
+  ],
+  "apis": [
+    {
+      "name": "userLogin",
+      "type": "POST",
+      "url": "../userLogin",
+      "response": {
+        "isConnect": true,
+        "token": "2348324232sc"
+      }
+    },
+    {
+      "name": "createUser",
+      "url": "../createUser",
+      "response": {
+        "isConnect": true,
+        "token": "2348324232sc"
+      }
+    },
+    {
+      "name": "barberList",
+      "url": "../{parameters}/barber",
+      "response": "barberModel[]",
+      "parameters": [
+        {
+          "name": "favorits",
+          "type": "string",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "name": "about",
+      "url": "../about",
+      "response": "aboutModel"
+    },
+    {
+      "name": "notification",
+      "url": "../notification",
+      "response": "notificationModel"
+    }
+  ]
+}
