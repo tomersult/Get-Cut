@@ -14,6 +14,7 @@ mycursor = mydb.cursor()
 @app.route('/', methods=['POST'])
 def login():
     if request.method == 'POST':
+        val = request
         user = request.json['userName']
         password = request.json['password']
         mycursor.execute("select * from users where UserName "
