@@ -1,11 +1,10 @@
 import os
 from flask import Blueprint, request, jsonify,current_app
-from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
 from database import db
 
 
-app_image = Blueprint('account_api', __name__)
+app_image = Blueprint('account_api_image', __name__)
 
 
 class Image(db.Model):
