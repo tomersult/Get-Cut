@@ -5,6 +5,7 @@ from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 from database import db
 
+
 user_bp = Blueprint('account_api_user', __name__)
 
 
@@ -14,7 +15,7 @@ class User(db.Model):
     name = db.Column(db.String(50))
     password = db.Column(db.String(80))
     email = db.Column(db.String(80))
-    location = db.Column(db.String(50))  # change to real location
+    location = db.Column(db.String(50))
     gender = db.Column(db.String(8))
     dateOfBirth = db.Column(db.String(30))
     admin = db.Column(db.Boolean)
@@ -80,7 +81,6 @@ def get_one_user(public_id):
 
 @user_bp.route('/createUser', methods=['PUT'])
 def create_user():
-    print(request)
     data = request.get_json()
     hashed_password = generate_password_hash(data['password'], method='sha256')
 
@@ -134,9 +134,5 @@ def login():
         token = user.public_id
         return {"token": token}
 
-    # if check_password_hash(user.password, auth.password):
-    #     token = user.public_id
-    #
-    #     return jsonify(token)
-
     return make_response('Could not verify', 401, {'WWW-Authenticate': 'Basic realm="Login required!"'})
+

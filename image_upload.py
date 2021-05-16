@@ -1,10 +1,10 @@
 import os
-from flask import Blueprint, request, jsonify,current_app
+from flask import Blueprint, request, jsonify, current_app, send_file
 from werkzeug.utils import secure_filename
 from database import db
 
 
-app_image = Blueprint('account_api_image', __name__)
+image_bp = Blueprint('account_api_image', __name__)
 
 
 class Image(db.Model):
@@ -25,18 +25,18 @@ def allowed_image(filename):
         return False
 
 
-@app_image.route('/upload', methods=['POST'])
+@image_bp.route('/upload', methods=['POST'])
 def upload():
     image_req = request.files['image']
     if image_req.filename == "":
-        return jsonify({'message' : 'Image must have filename'})
+        return jsonify({'message': 'Image must have filename'})
 
     if not allowed_image(image_req.filename):
-        return jsonify({'message' : 'Image format not allowed'})
+        return jsonify({'message': 'Image format not allowed'})
     else:
         filename = secure_filename(image_req.filename)
 
-    image_req.save(os.path.join(current_app.config['IMAGE_UPLOAD_PATH'],filename))
+    image_req.save(os.path.join(current_app.config['IMAGE_UPLOAD_PATH'], filename))
 
     current_app.config['IMAGE_UPLOAD_PATH']
 
@@ -45,8 +45,16 @@ def upload():
     db.session.add(new_image)
     db.session.commit()
 
-    return jsonify({'message' : 'Image uploaded'})
+    return jsonify({'message': 'Image uploaded'})
 
-@app_image.route("/test",methods=['GET'])
-def hello():
-    return "Hello World!"
+
+@image_bp.route('/images/<image_name_req>', methods=['GET'])
+def get_image(image_name_req):
+    images = Image.query.all()
+    for image in images:
+        if image.image_name == image_name_req:
+            image_path = image.path
+
+    path = image_path + '/' + image_name_req
+
+    return send_file(path)

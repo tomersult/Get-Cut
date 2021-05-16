@@ -21,16 +21,12 @@
     {
       "name": "barberModel",
       "model": {
-        "barberName": "Tomer sultinian", // string
-        "location": "Netanya", // string
-        "grade": 5 // 1 -5 number
-        "followers": 100 // number
-        "picture": 2 // svg
-        "summary": {
-          "time": "2021-05-11" // current time
-          "sentence": " i do barber" // string
-          "headline": "headline" // string
-        }
+          "public_id" : "user_public_id",
+          "barber_name" : "Tomer the barber",
+           "location" : "Rishon lezion",
+           "opening_hours" : "12:00-19:00",
+           "specialization" : "men haircut , women haircut ...",
+           "description" : "some words"
     }
     },
     {
