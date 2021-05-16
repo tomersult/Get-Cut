@@ -3,15 +3,27 @@ from flask_sqlalchemy import SQLAlchemy
 import uuid
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
+from image_upload import Image,app_image
+import os.path
+from database import db
 
-# create a flask instance
 app = Flask(__name__)
 
-app.config['SECRET_KEY'] = 'thisissecret'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:or123iel45678@localhost/user_db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+def create_app():
+    app.config['IP'] = '127.0.0.1'
+    app.config['SECRET_KEY'] = 'thisissecret'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:1234@localhost/users_db'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['IMAGE_UPLOAD_PATH'] = 'C:/Users/tomer/PycharmProjects/finalProject/uploads'
+    app.config['ALLOWED_FORMAT'] = ['PNG', 'JPG', 'JPEG', 'GIF']
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:1234@localhost/users_db'
+    db.init_app(app)
+    app.register_blueprint(app_image, url_prefix='')
+    return app
 
-db = SQLAlchemy(app)
+def setup_database(app):
+    with app.app_context():
+        db.create_all()
 
 
 class User(db.Model):
@@ -91,19 +103,6 @@ def get_one_user(public_id):
     return jsonify({'user': user_data})
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 @app.route('/createUser', methods=['PUT'])
 def create_user():
     print(request)
@@ -156,7 +155,7 @@ def login():
     if not user:
         return make_response('Could not verify', 401, {'WWW-Authenticate': 'Basic realm="Login required!"'})
 
-    if user.password == auth.password:
+    if check_password_hash(user.password, auth.password):
         token = user.public_id
         return {"token": token}
 
@@ -198,5 +197,6 @@ def get_all_todos(current_user):
 
 
 if __name__ == "__main__":
-    app.run(host="192.168.1.14",debug=True)
-
+    app = create_app()
+    setup_database(app)
+    app.run(host=app.config['IP'],debug=True)
