@@ -1,6 +1,6 @@
 from datetime import datetime
 from flask import Blueprint
-from flask import request, jsonify, make_response
+from flask import request, jsonify
 from database import db
 
 barber_bp = Blueprint('account_api_barber', __name__)
@@ -20,7 +20,7 @@ class Barber(db.Model):
 
 
 @barber_bp.route('/createBarber', methods=['POST'])
-def upload():
+def create():
     data = request.get_json()
     grade = 0
     followers = 0

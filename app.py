@@ -1,8 +1,8 @@
 from flask import Flask
 from database import db
-from image_upload import image_bp
-from user import user_bp
-from barber import barber_bp
+from requests.image_upload import image_bp
+from requests.user import user_bp
+from requests.barber import barber_bp
 
 
 app = Flask(__name__)
