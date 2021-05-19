@@ -34,6 +34,38 @@
         "barber_public_id": "b7cb5ace-6b8a-4daa-baa1-808c1b3c28a3"
       }
     },
+        {
+      "name": "delete_image",
+      "model": {
+        "image_name": "image_name"
+      }
+    },
+    {
+      "name": "create_appointment",
+      "model": {
+        "user_public_id": "user_id",
+        "barber_public_id": "barber_id",
+        "start": "2021-05-19 00:16:10.540777",
+        "end": "2021-05-19 00:16:40.540777",
+        "haircut_type": "men haircut",
+        "comments": "blablabla"
+      }
+    },
+    {
+      "name": "delete_appointment",
+      "model": {
+        "user_public_id": "user_id",
+        "barber_public_id": "barber_id",
+        "start": "2021-05-19 00:16:10.540777",
+        "end": "2021-05-19 00:16:40.540777"
+      }
+    },
+        {
+      "name": "delete_favorite",
+      "model": {
+        "barber_public_id": "b7cb5ace-6b8a-4daa-baa1-808c1b3c28a3"
+      }
+    },
     {
       "name": "aboutModel",
       "model": {

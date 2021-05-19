@@ -59,3 +59,23 @@ def get_all_barbers():
         output.append(barber_data)
 
     return jsonify({'barbers': output})
+
+
+@barber_bp.route('/barber/<public_id>', methods=['DELETE'])
+def delete_barber(public_id):
+    barber = Barber.query.filter_by(public_id=public_id).first()
+    from requests.favorites import Favorite
+    followers = Favorite.query.all()
+
+    for follow in followers:
+        if follow.barber_public_id == public_id:
+            db.session.delete(follow)
+            db.session.commit()
+
+    if not barber:
+        return jsonify({'message': 'No barber found!'})
+
+    db.session.delete(barber)
+    db.session.commit()
+
+    return jsonify({'message': 'The barber has been deleted!'})

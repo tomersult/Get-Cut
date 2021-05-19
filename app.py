@@ -1,5 +1,6 @@
 from flask import Flask
 from database import db
+from requests.appointment import appointment_bp
 from requests.image_upload import image_bp
 from requests.user import user_bp
 from requests.barber import barber_bp
@@ -22,6 +23,7 @@ def create_app():
     app.register_blueprint(user_bp, url_prefix='')
     app.register_blueprint(barber_bp, url_prefix='')
     app.register_blueprint(favorite_bp, url_prefix='')
+    app.register_blueprint(appointment_bp, url_prefix='')
     return app
 
 

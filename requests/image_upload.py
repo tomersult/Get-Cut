@@ -82,3 +82,18 @@ def get_image_by_user_id(current_user):
             output.append(image_data)
 
     return jsonify({'images': output})
+
+
+@image_bp.route('/image', methods=['DELETE'])
+@token_required
+def delete_image(current_user):
+    images = Image.query.filter_by(user_public_id=current_user.public_id).all()
+    data = request.get_json()
+
+    for image in images:
+        if image.image_name == data['image_name']:
+            db.session.delete(image)
+            db.session.commit()
+            os.remove(image.path + '/' + image.image_name)
+
+    return jsonify({'message': 'The image has been deleted!'})

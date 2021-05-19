@@ -90,3 +90,17 @@ def get_followers_number(current_barber):
                     counter += 1
 
     return jsonify({'followers': counter})
+
+
+@favorite_bp.route('/favorite', methods=['DELETE'])
+@token_required
+def delete_favorite(current_user):
+    data = request.get_json()
+    favorites = Favorite.query.all()
+
+    for favorite in favorites:
+        if (favorite.user_public_id == current_user.public_id) & (data['barber_public_id'] == favorite.barber_public_id):
+            db.session.delete(favorite)
+            db.session.commit()
+
+    return jsonify({'message': 'Favorite deleted!'})
