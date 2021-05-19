@@ -28,6 +28,8 @@ def token_required(f):
 
         if 'x-access-token' in request.headers:
             token = request.headers['x-access-token']
+        else:
+            return jsonify({'message': 'header x-access-token is missing!'}), 401
 
         if not token:
             return jsonify({'message': 'Token is missing!'}), 401
@@ -82,6 +84,12 @@ def get_one_user(public_id):
 @user_bp.route('/createUser', methods=['PUT'])
 def create_user():
     data = request.get_json()
+
+    users = User.query.all()
+    for user in users:
+        if user.email == data['email']:
+            return jsonify({'message': 'This email already exist!'}), 401
+
     hashed_password = generate_password_hash(data['password'], method='sha256')
 
     new_user = User(public_id=str(uuid.uuid4()), name=data['userName'], password=hashed_password, email=data['email'],
@@ -135,4 +143,3 @@ def login():
         return {"token": token}
 
     return make_response('Could not verify', 401, {'WWW-Authenticate': 'Basic realm="Login required!"'})
-

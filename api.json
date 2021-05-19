@@ -21,13 +21,18 @@
     {
       "name": "barberModel",
       "model": {
-          "public_id" : "user_public_id",
           "barber_name" : "Tomer the barber",
            "location" : "Rishon lezion",
            "opening_hours" : "12:00-19:00",
            "specialization" : "men haircut , women haircut ...",
            "description" : "some words"
     }
+    },
+    {
+      "name": "add_favorite",
+      "model": {
+        "barber_public_id": "b7cb5ace-6b8a-4daa-baa1-808c1b3c28a3"
+      }
     },
     {
       "name": "aboutModel",

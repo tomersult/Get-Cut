@@ -3,6 +3,7 @@ from database import db
 from requests.image_upload import image_bp
 from requests.user import user_bp
 from requests.barber import barber_bp
+from requests.favorites import favorite_bp
 
 
 app = Flask(__name__)
@@ -20,6 +21,7 @@ def create_app():
     app.register_blueprint(image_bp, url_prefix='')
     app.register_blueprint(user_bp, url_prefix='')
     app.register_blueprint(barber_bp, url_prefix='')
+    app.register_blueprint(favorite_bp, url_prefix='')
     return app
 
 
