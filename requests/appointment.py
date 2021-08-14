@@ -106,5 +106,5 @@ def delete_appointment():
 
     db.session.delete(appointment)
     db.session.commit()
-    return jsonify({'message': 'The appointment has been deleted! ' + data['user_public_id']})
+    return jsonify({'message': 'The appointment has been deleted! ' + 'User public id:' + data['user_public_id']})
 

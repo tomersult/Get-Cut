@@ -4,7 +4,6 @@ from database import db
 from requests.user import token_required
 from requests.dayBook import DayBook, updateTime
 import datetime
-import calendar
 
 barber_information_bp = Blueprint('account_api_barber_information', __name__)
 
@@ -13,25 +12,59 @@ class BarberInfo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     barber_public_id = db.Column(db.String(50))
     phone_num = db.Column(db.String(20))
-    open_hour = db.Column(db.String(100))
-    close_hour = db.Column(db.String(100))
     address = db.Column(db.String(100))
     days_for_daybook = db.Column(db.Integer)
+
+
+class OpenHours(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    barber_public_id = db.Column(db.String(50))
+    monday_open = db.Column(db.String(50))
+    tuesday_open = db.Column(db.String(50))
+    wednesday_open = db.Column(db.String(50))
+    thursday_open = db.Column(db.String(50))
+    friday_open = db.Column(db.String(50))
+    saturday_open = db.Column(db.String(50))
+    sunday_open = db.Column(db.String(50))
+    monday_close = db.Column(db.String(50))
+    tuesday_close = db.Column(db.String(50))
+    wednesday_close = db.Column(db.String(50))
+    thursday_close = db.Column(db.String(50))
+    friday_close = db.Column(db.String(50))
+    saturday_close = db.Column(db.String(50))
+    sunday_close = db.Column(db.String(50))
 
 
 @barber_information_bp.route('/addBarberInfo', methods=['POST'])
 @token_required
 def create_info(current_barber):
     data = request.get_json()
-    #open_hours = ''
-    #for i in range(len(data[1]['open_hour']) - 1):
-    #    open_hours += ''.join(data[1]['open_hour'][i])
-    #close_hours = ','.join(str(x) for x in data[1]['close_hour'])
-    #new_barber_info = BarberInfo(barber_public_id=current_barber.public_id, phone_num=data[0]['phone_num'],
-     #                            open_hour=open_hours, close_hour=close_hours,
-      #                           address=data[3]['address'])
-    #db.session.add(new_barber_info)
-    #db.session.commit()
+
+    # initialize barber information
+    new_barber_info = BarberInfo(barber_public_id=current_barber.public_id, phone_num=data[0]['phone_num'],
+                                 address=data[3]['address'], days_for_daybook=data[4]['days_for_daybook'])
+    db.session.add(new_barber_info)
+    db.session.commit()
+
+    # initialize barber open hours
+    a = ','.join(data[1]['open_hour'][1])
+    new_barber_open_hours = OpenHours(barber_public_id=current_barber.public_id,
+                                      monday_open=toString(data[1]['open_hour'][0]),
+                                      tuesday_open=toString(data[1]['open_hour'][1]),
+                                      wednesday_open=toString(data[1]['open_hour'][2]),
+                                      thursday_open=toString(data[1]['open_hour'][3]),
+                                      friday_open=toString(data[1]['open_hour'][4]),
+                                      saturday_open=toString(data[1]['open_hour'][5]),
+                                      sunday_open=toString(data[1]['open_hour'][6]),
+                                      monday_close=toString(data[2]['close_hour'][0]),
+                                      tuesday_close=toString(data[2]['close_hour'][1]),
+                                      wednesday_close=toString(data[2]['close_hour'][2]),
+                                      thursday_close=toString(data[2]['close_hour'][3]),
+                                      friday_close=toString(data[2]['close_hour'][4]),
+                                      saturday_close=toString(data[2]['close_hour'][5]),
+                                      sunday_close=toString(data[2]['close_hour'][6]))
+    db.session.add(new_barber_open_hours)
+    db.session.commit()
 
     creation_time = datetime.datetime.now()
     day = creation_time.weekday()
@@ -62,6 +95,7 @@ def create_info(current_barber):
     return jsonify({'message': 'Information saved !'})
 
 
+# change !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 @barber_information_bp.route('/getBarberInfo', methods=['GET'])
 @token_required
 def get_barber_info(current_barber):
@@ -81,3 +115,9 @@ def get_barber_info(current_barber):
 
     return jsonify({'barber info:': output})
 
+
+def toString(list1):
+    if list1 is not None:
+        return ','.join(list1)
+    else:
+        return None
