@@ -1,8 +1,10 @@
+import uuid
 from datetime import datetime
 from flask import Blueprint
 from flask import request, jsonify
 from database import db
 from requests.user import token_required
+from requests.dayBook import DayBook
 
 barber_bp = Blueprint('account_api_barber', __name__)
 
@@ -10,35 +12,37 @@ barber_bp = Blueprint('account_api_barber', __name__)
 class Barber(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     public_id = db.Column(db.String(50), unique=True)
-    barber_name = db.Column(db.String(50))
-    location = db.Column(db.String(80))
+    barber_name = db.Column(db.String(80))
+    location_lat = db.Column(db.String(80))
+    location_lng = db.Column(db.String(80))
     grade = db.Column(db.Integer)
     followers = db.Column(db.Integer)
+    picture = db.Column(db.String(200))
     creation_time = db.Column(db.String(50))
-    opening_hours = db.Column(db.String(50))
-    specialization = db.Column(db.String(50))
-    description = db.Column(db.String(500))
+    sentence = db.Column(db.String(500))
+    headline = db.Column(db.String(500))
 
 
 @barber_bp.route('/createBarber', methods=['POST'])
-@token_required
-def create(current_barber):
+def create():
     data = request.get_json()
-    grade = 0
+    grade = data['grade']
     followers = 0
     creation_time = datetime.utcnow()
 
     barbers = Barber.query.all()
     for barber in barbers:
-        if barber.public_id == current_barber.public_id:
+        if barber.barber_name == data['barber_name']:
             return jsonify({'message': 'this barber already created!'})
 
-    new_barber = Barber(public_id=current_barber.public_id, barber_name=data['barber_name'], location=data['location'],
-                        grade=grade, followers=followers, creation_time=creation_time,
-                        specialization=data['specialization'], description=data['description'])
+    new_public_id = str(uuid.uuid4())
+
+    new_barber = Barber(public_id=new_public_id, barber_name=data['barber_name'],
+                        location_lat=data['location_lat'], location_lng=data['location_lng'],
+                        grade=grade, followers=followers, picture=data['picture'], creation_time=creation_time,
+                        sentence=data['sentence'], headline=data['headline'])
     db.session.add(new_barber)
     db.session.commit()
-
     return jsonify({'message': 'New barber created!'})
 
 
@@ -51,11 +55,14 @@ def get_all_barbers():
         barber_data = {}
         barber_data['public_id'] = barber.public_id
         barber_data['barber_name'] = barber.barber_name
+        barber_data['location_lat'] = barber.location_lat
+        barber_data['location_lng'] = barber.location_lng
         barber_data['grade'] = barber.grade
         barber_data['followers'] = barber.followers
+        barber_data['picture'] = barber.picture
         barber_data['creation_time'] = barber.creation_time
-        barber_data['specialization'] = barber.specialization
-        barber_data['description'] = barber.description
+        barber_data['sentence'] = barber.sentence
+        barber_data['headline'] = barber.headline
         output.append(barber_data)
 
     return jsonify({'barbers': output})
