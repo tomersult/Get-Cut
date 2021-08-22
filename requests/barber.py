@@ -46,26 +46,56 @@ def create():
     return jsonify({'message': 'New barber created!'})
 
 
+@barber_bp.route('/getBarber/<public_id>', methods=['GET'])
+def get_barber(public_id):
+    barber = Barber.query.filter_by(public_id=public_id).first()
+    if not barber:
+        return jsonify({'message': 'No user found!'})
+
+    exact_location = {}
+    summary = {}
+
+    barber_data = {}
+    barber_data['public_id'] = barber.public_id
+    barber_data['barber_name'] = barber.barber_name
+    exact_location['location_lat'] = barber.location_lat
+    exact_location['location_lng'] = barber.location_lng
+    barber_data['exact_location'] = exact_location
+    barber_data['grade'] = barber.grade
+    barber_data['followers'] = barber.followers
+    barber_data['picture'] = barber.picture
+    summary['creation_time'] = barber.creation_time
+    summary['sentence'] = barber.sentence
+    summary['headline'] = barber.headline
+    barber_data['summary'] = summary
+
+    return jsonify(barber_data)
+
+
 @barber_bp.route('/getAllBarbers', methods=['GET'])
 def get_all_barbers():
     barbers = Barber.query.all()
     output = []
+    exact_location = {}
+    summary = {}
 
     for barber in barbers:
         barber_data = {}
         barber_data['public_id'] = barber.public_id
         barber_data['barber_name'] = barber.barber_name
-        barber_data['location_lat'] = barber.location_lat
-        barber_data['location_lng'] = barber.location_lng
+        exact_location['location_lat'] = barber.location_lat
+        exact_location['location_lng'] = barber.location_lng
+        barber_data['exact_location'] = exact_location
         barber_data['grade'] = barber.grade
         barber_data['followers'] = barber.followers
         barber_data['picture'] = barber.picture
-        barber_data['creation_time'] = barber.creation_time
-        barber_data['sentence'] = barber.sentence
-        barber_data['headline'] = barber.headline
+        summary['creation_time'] = barber.creation_time
+        summary['sentence'] = barber.sentence
+        summary['headline'] = barber.headline
+        barber_data['summary'] = summary
         output.append(barber_data)
 
-    return jsonify({'barbers': output})
+    return jsonify(output)
 
 
 @barber_bp.route('/barber/<public_id>', methods=['DELETE'])

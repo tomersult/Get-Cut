@@ -71,7 +71,7 @@ def create_info(current_barber):
     temp_time = creation_time + datetime.timedelta(hours=24)
     open_hour = data[1]['open_hour']
     close_hour = data[2]['close_hour']
-    # create week
+    # create days in daybook (the barber chose how much)
     for i in range(data[4]['days_for_daybook']):
         new_day = DayBook(barber_public_id=current_barber.public_id, day=(temp_time.day + i), month=temp_time.month,
                           year=temp_time.year)
@@ -79,7 +79,7 @@ def create_info(current_barber):
         # create one day
         length = 0
         place = ((i + day + 1) % 7)
-        if open_hour[place] != None:
+        if open_hour[place] is not None:
             length = len(open_hour[place])
 
         for j in range(length):
@@ -95,25 +95,57 @@ def create_info(current_barber):
     return jsonify({'message': 'Information saved !'})
 
 
-# change !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 @barber_information_bp.route('/getBarberInfo', methods=['GET'])
-@token_required
-def get_barber_info(current_barber):
+def get_barber_info():
+    data = request.get_json()
+    barber = BarberInfo.query.filter_by(barber_public_id=data['barber_public_id']).first()
+    if not barber:
+        return jsonify({'message': 'This barber did not fill information yet!'})
+
+    all_open_hours = OpenHours.query.filter_by(barber_public_id=data['barber_public_id']).first()
+    open_hours, close_hours = string_to_list(all_open_hours)
+    barber_data = {'barber_public_id': barber.barber_public_id, 'phone_num': barber.phone_num,
+                   'open_hour': open_hours, 'close_hour': close_hours, 'location': barber.address}
+
+    return jsonify(barber_data)
+
+
+@barber_information_bp.route('/daybookPlusDay', methods=['PUT'])
+# every day we open one more day for each barber
+def daybook_plus_day():
+    data = request.get_json()
+    creation_time = datetime.datetime.now()
     barbers = BarberInfo.query.all()
-    output = []
+    if not barbers:
+        return jsonify({'message': 'There is no barber yet!'})
 
     for barber in barbers:
-        if barber.barber_public_id == current_barber.public_id:
-            barber_data = {}
-            barber_data['barber_public_id'] = barber.barber_public_id
-            barber_data['phone_num'] = barber.phone_num
-            barber_data['open_hour'] = barber.open_hour
-            barber_data['close_hour'] = barber.close_hour
-            barber_data['address'] = barber.address
-            output.append(barber_data)
-            break
+        open_hours = OpenHours.query.filter_by(barber_public_id=barber.barber_public_id).first()
+        # the number of the day in open_hours table
+        open_day_num = ((((datetime.datetime.now().weekday() + barber.days_for_daybook) % 7) + 1) % 7)
+        close_day_num = open_day_num + 7
+        my_day_time = creation_time + datetime.timedelta(days=barber.days_for_daybook + 1)
+        new_day = DayBook(barber_public_id=barber.barber_public_id,
+                          day=str(creation_time.day + barber.days_for_daybook + 1),
+                          month=my_day_time.month,
+                          year=my_day_time.year)
+        db.session.add(new_day)
 
-    return jsonify({'barber info:': output})
+        my_day_open_hours, my_day_close_hours = get_my_day_open_hours(open_day_num, open_hours)
+        if my_day_open_hours is not None:
+            length = len(my_day_open_hours)
+
+        for j in range(length):
+            open1 = datetime.datetime.strptime(my_day_open_hours[j], '%H:%M')
+            my_day_time = my_day_time.replace(minute=open1.minute, hour=open1.hour, second=0, microsecond=0)
+            end = datetime.datetime.strptime(my_day_close_hours[j], '%H:%M')
+            end_time = my_day_time.replace(minute=end.minute, hour=end.hour, second=0, microsecond=0)
+            while my_day_time != end_time:
+                str1 = my_day_time.strftime("%H:%M")
+                updateTime(str1, new_day, False)
+                my_day_time = my_day_time + datetime.timedelta(minutes=15)
+
+    return jsonify({'message': 'new day has been added to all barbers'})
 
 
 def toString(list1):
@@ -121,3 +153,48 @@ def toString(list1):
         return ','.join(list1)
     else:
         return None
+
+
+def string_to_list(all_open_hours):
+    open_hours = [my_split(all_open_hours.monday_open), my_split(all_open_hours.tuesday_open),
+                  my_split(all_open_hours.wednesday_open), my_split(all_open_hours.thursday_open),
+                  my_split(all_open_hours.friday_open), my_split(all_open_hours.saturday_open),
+                  my_split(all_open_hours.sunday_open)]
+    close_hours = [my_split(all_open_hours.monday_close), my_split(all_open_hours.tuesday_close),
+                   my_split(all_open_hours.wednesday_close), my_split(all_open_hours.thursday_close),
+                   my_split(all_open_hours.friday_close), my_split(all_open_hours.saturday_close),
+                   my_split(all_open_hours.sunday_close)]
+    return open_hours, close_hours
+
+
+def my_split(str1):
+    if str1 is not None:
+        return str1.split(',')
+    else:
+        return None
+
+
+def get_my_day_open_hours(day_num, open_hours):
+    if day_num == 0:
+        my_day_open = open_hours.monday_open
+        my_day_close = open_hours.monday_close
+    if day_num == 1:
+        my_day_open = open_hours.tuesday_open
+        my_day_close = open_hours.tuesday_close
+    if day_num == 2:
+        my_day_open = open_hours.wednesday_open
+        my_day_close = open_hours.wednesday_close
+    if day_num == 3:
+        my_day_open = open_hours.thursday_open
+        my_day_close = open_hours.thursday_close
+    if day_num == 4:
+        my_day_open = open_hours.friday_open
+        my_day_close = open_hours.friday_close
+    if day_num == 5:
+        my_day_open = open_hours.saturday_open
+        my_day_close = open_hours.saturday_close
+    if day_num == 6:
+        my_day_open = open_hours.sunday_open
+        my_day_close = open_hours.sunday_close
+
+    return my_split(my_day_open), my_split(my_day_close)

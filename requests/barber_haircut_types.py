@@ -44,7 +44,7 @@ def get_male_haircut(current_barber):
                 haircuts['sex'] = haircut.sex
                 output.append(haircuts)
 
-    return jsonify({'barbers': output})
+    return jsonify(output)
 
 
 @barber_haircut_bp.route('/getFemaleHairCut', methods=['GET'])
@@ -64,26 +64,34 @@ def get_female_haircut(current_barber):
                 haircuts['sex'] = haircut.sex
                 output.append(haircuts)
 
-    return jsonify({'barbers': output})
+    return jsonify(output)
 
 
 @barber_haircut_bp.route('/getAllHairCut', methods=['GET'])
 @token_required
 def get_all_haircut(current_barber):
-    haircuts = BarberHairCut.query.all()
-    output = []
+    haircuts = BarberHairCut.query.filter_by(barber_public_id=current_barber.public_id).all()
+    male_output = []
+    female_output = []
 
     for haircut in haircuts:
         if current_barber.public_id == haircut.barber_public_id:
-            haircuts = {}
-            haircuts['barber_public_id'] = haircut.barber_public_id
-            haircuts['name'] = haircut.name
-            haircuts['time'] = haircut.time
-            haircuts['price'] = haircut.price
-            haircuts['sex'] = haircut.sex
-            output.append(haircuts)
+            if haircut.sex == 'male':
+                haircuts = {}
+                haircuts['barber_public_id'] = haircut.barber_public_id
+                haircuts['name'] = haircut.name
+                haircuts['time'] = haircut.time
+                haircuts['price'] = haircut.price
+                male_output.append(haircuts)
+            if haircut.sex == 'female':
+                haircuts = {}
+                haircuts['barber_public_id'] = haircut.barber_public_id
+                haircuts['name'] = haircut.name
+                haircuts['time'] = haircut.time
+                haircuts['price'] = haircut.price
+                female_output.append(haircuts)
 
-    return jsonify({'barbers': output})
+    return jsonify({'male': male_output}, {'female': female_output})
 
 
 @barber_haircut_bp.route('/deleteHaircut', methods=['DELETE'])
