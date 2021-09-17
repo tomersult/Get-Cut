@@ -1,9 +1,10 @@
 from flask import Blueprint
 from flask import request, jsonify
 from database import db
+from requests.barber import barber_token_required, Barber
 from requests.user import token_required
 import datetime
-from requests.dayBook import DayBook, updateTime
+from requests.dayBook import DayBook, updateTime, appointment_amount_of_time
 
 appointment_bp = Blueprint('appointment_api_barber', __name__)
 
@@ -19,11 +20,11 @@ class Appointment(db.Model):
     amount_of_time = db.Column(db.String(50))
     haircut_type = db.Column(db.String(50))
     price = db.Column(db.String(500))
+    gender = db.Column(db.String(50))
 
 
 @appointment_bp.route('/appointment', methods=['POST'])
-@token_required
-def create_appointment(current_user):
+def create_appointment():
     data = request.get_json()
 
     creation_time = datetime.datetime.now()
@@ -45,10 +46,10 @@ def create_appointment(current_user):
         updateTime(str1, my_day, True)
         temp_time = temp_time + datetime.timedelta(minutes=15)
 
-    new_appointment = Appointment(user_public_id=current_user.public_id, barber_public_id=data['barber_public_id'],
+    new_appointment = Appointment(user_public_id=data['user_public_id'], barber_public_id=data['barber_public_id'],
                                   day=data['day'], month=data['month'], year=data['year'],
                                   start=data['start'], amount_of_time=data['amount_of_time'],
-                                  haircut_type=data['haircut_type'], price=data['price'])
+                                  haircut_type=data['haircut_type'], price=data['price'], gender=data['gender'])
     db.session.add(new_appointment)
     db.session.commit()
 
@@ -63,16 +64,25 @@ def get_user_appointments(current_user):
     output = []
 
     for appointment in appointments:
+        end_time = appointment_amount_of_time(appointment.start, appointment.amount_of_time)
+        barber = Barber.query.filter_by(public_id=appointment.barber_public_id).first()
+        barber_name = barber.barber_name
         appointment_data = {}
-        appointment_data['user_public_id'] = appointment.user_public_id
+        date = {}
+        date['day'] = appointment.day
+        date['month'] = appointment.month
+        date['year'] = appointment.year
+        appointment_data['price'] = appointment.price
+        appointment_data['amount_of_time'] = appointment.amount_of_time
+        appointment_data['time'] = appointment.start + '-' + end_time
+        appointment_data['date'] = date
+        appointment_data['gender'] = appointment.gender
         appointment_data['barber_public_id'] = appointment.barber_public_id
-        appointment_data['start'] = appointment.start
-        appointment_data['end'] = appointment.end
         appointment_data['haircut_type'] = appointment.haircut_type
-        appointment_data['comments'] = appointment.comments
+        appointment_data['barber_name'] = barber_name
         output.append(appointment_data)
 
-    return jsonify({'User appointments': output})
+    return jsonify(output)
 
 
 @appointment_bp.route('/appointment', methods=['DELETE'])
@@ -89,7 +99,7 @@ def delete_appointment():
 
     appointment = Appointment.query.filter_by(barber_public_id=data['barber_public_id'], day=data['day'],
                                               month=data['month'], year=data['year'], start=data['start'],
-                                              amount_of_time=data['amount_of_time']).first()
+                                              amount_of_time=data['amount_of_time'], gender=data['gender']).first()
     if not appointment:
         return jsonify({'message': 'This barber not available!'})
 

@@ -1,6 +1,7 @@
 from flask import Blueprint
 from flask import request, jsonify
 from database import db
+from requests.barber import barber_token_required
 from requests.user import token_required
 
 barber_haircut_bp = Blueprint('account_api_barber_haircut', __name__)
@@ -12,15 +13,15 @@ class BarberHairCut(db.Model):
     name = db.Column(db.String(50))
     time = db.Column(db.String(20))
     price = db.Column(db.String(20))
-    sex = db.Column(db.String(20))
+    gender = db.Column(db.String(20))
 
 
 @barber_haircut_bp.route('/addHairCut', methods=['POST'])
-@token_required
+@barber_token_required
 def create(current_barber):
     data = request.get_json()
     new_barber_haircut = BarberHairCut(barber_public_id=current_barber.public_id, name=data['name'],
-                                       time=data['time'], price=data['price'], sex=data['sex'])
+                                       time=data['time'], price=data['price'], gender=data['gender'])
     db.session.add(new_barber_haircut)
     db.session.commit()
 
@@ -35,13 +36,13 @@ def get_male_haircut(current_barber):
 
     for haircut in haircuts:
         if current_barber.public_id == haircut.barber_public_id:
-            if haircut.sex == "male":
+            if haircut.gender == "male":
                 haircuts = {}
                 haircuts['barber_public_id'] = haircut.barber_public_id
                 haircuts['name'] = haircut.name
                 haircuts['time'] = haircut.time
                 haircuts['price'] = haircut.price
-                haircuts['sex'] = haircut.sex
+                haircuts['gender'] = haircut.gender
                 output.append(haircuts)
 
     return jsonify(output)
@@ -55,20 +56,20 @@ def get_female_haircut(current_barber):
 
     for haircut in haircuts:
         if current_barber.public_id == haircut.barber_public_id:
-            if haircut.sex == "female":
+            if haircut.gender == "female":
                 haircuts = {}
                 haircuts['barber_public_id'] = haircut.barber_public_id
                 haircuts['name'] = haircut.name
                 haircuts['time'] = haircut.time
                 haircuts['price'] = haircut.price
-                haircuts['sex'] = haircut.sex
+                haircuts['gender'] = haircut.gender
                 output.append(haircuts)
 
     return jsonify(output)
 
 
 @barber_haircut_bp.route('/getAllHairCut', methods=['GET'])
-@token_required
+@barber_token_required
 def get_all_haircut(current_barber):
     haircuts = BarberHairCut.query.filter_by(barber_public_id=current_barber.public_id).all()
     male_output = []
@@ -76,14 +77,14 @@ def get_all_haircut(current_barber):
 
     for haircut in haircuts:
         if current_barber.public_id == haircut.barber_public_id:
-            if haircut.sex == 'male':
+            if haircut.gender == 'male':
                 haircuts = {}
                 haircuts['barber_public_id'] = haircut.barber_public_id
                 haircuts['name'] = haircut.name
                 haircuts['time'] = haircut.time
                 haircuts['price'] = haircut.price
                 male_output.append(haircuts)
-            if haircut.sex == 'female':
+            if haircut.gender == 'female':
                 haircuts = {}
                 haircuts['barber_public_id'] = haircut.barber_public_id
                 haircuts['name'] = haircut.name

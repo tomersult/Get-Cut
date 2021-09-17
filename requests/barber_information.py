@@ -1,6 +1,7 @@
 from flask import Blueprint
 from flask import request, jsonify
 from database import db
+from requests.barber import barber_token_required
 from requests.user import token_required
 from requests.dayBook import DayBook, updateTime
 import datetime
@@ -12,8 +13,9 @@ class BarberInfo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     barber_public_id = db.Column(db.String(50))
     phone_num = db.Column(db.String(20))
-    address = db.Column(db.String(100))
-    days_for_daybook = db.Column(db.Integer)
+    location = db.Column(db.String(100))
+    sentence = db.Column(db.String(500))
+    headline = db.Column(db.String(50))
 
 
 class OpenHours(db.Model):
@@ -36,33 +38,34 @@ class OpenHours(db.Model):
 
 
 @barber_information_bp.route('/addBarberInfo', methods=['POST'])
-@token_required
+@barber_token_required
 def create_info(current_barber):
     data = request.get_json()
 
     # initialize barber information
     new_barber_info = BarberInfo(barber_public_id=current_barber.public_id, phone_num=data[0]['phone_num'],
-                                 address=data[3]['address'], days_for_daybook=data[4]['days_for_daybook'])
+                                 location=data[3]['location'], sentence=data[4]['sentence']
+                                 , headline=data[5]['headline'])
     db.session.add(new_barber_info)
     db.session.commit()
 
     # initialize barber open hours
     a = ','.join(data[1]['open_hour'][1])
     new_barber_open_hours = OpenHours(barber_public_id=current_barber.public_id,
-                                      monday_open=toString(data[1]['open_hour'][0]),
-                                      tuesday_open=toString(data[1]['open_hour'][1]),
-                                      wednesday_open=toString(data[1]['open_hour'][2]),
-                                      thursday_open=toString(data[1]['open_hour'][3]),
-                                      friday_open=toString(data[1]['open_hour'][4]),
-                                      saturday_open=toString(data[1]['open_hour'][5]),
-                                      sunday_open=toString(data[1]['open_hour'][6]),
-                                      monday_close=toString(data[2]['close_hour'][0]),
-                                      tuesday_close=toString(data[2]['close_hour'][1]),
-                                      wednesday_close=toString(data[2]['close_hour'][2]),
-                                      thursday_close=toString(data[2]['close_hour'][3]),
-                                      friday_close=toString(data[2]['close_hour'][4]),
-                                      saturday_close=toString(data[2]['close_hour'][5]),
-                                      sunday_close=toString(data[2]['close_hour'][6]))
+                                      sunday_open=toString(data[1]['open_hour'][0]),
+                                      monday_open=toString(data[1]['open_hour'][1]),
+                                      tuesday_open=toString(data[1]['open_hour'][2]),
+                                      wednesday_open=toString(data[1]['open_hour'][3]),
+                                      thursday_open=toString(data[1]['open_hour'][4]),
+                                      friday_open=toString(data[1]['open_hour'][5]),
+                                      saturday_open=toString(data[1]['open_hour'][6]),
+                                      sunday_close=toString(data[2]['close_hour'][0]),
+                                      monday_close=toString(data[2]['close_hour'][1]),
+                                      tuesday_close=toString(data[2]['close_hour'][2]),
+                                      wednesday_close=toString(data[2]['close_hour'][3]),
+                                      thursday_close=toString(data[2]['close_hour'][4]),
+                                      friday_close=toString(data[2]['close_hour'][5]),
+                                      saturday_close=toString(data[2]['close_hour'][6]))
     db.session.add(new_barber_open_hours)
     db.session.commit()
 
@@ -72,13 +75,14 @@ def create_info(current_barber):
     open_hour = data[1]['open_hour']
     close_hour = data[2]['close_hour']
     # create days in daybook (the barber chose how much)
-    for i in range(data[4]['days_for_daybook']):
+    for i in range(14):
         new_day = DayBook(barber_public_id=current_barber.public_id, day=(temp_time.day + i), month=temp_time.month,
                           year=temp_time.year)
         db.session.add(new_day)
+        db.session.commit()
         # create one day
         length = 0
-        place = ((i + day + 1) % 7)
+        place = ((i + day + 2) % 7)
         if open_hour[place] is not None:
             length = len(open_hour[place])
 
@@ -104,8 +108,16 @@ def get_barber_info():
 
     all_open_hours = OpenHours.query.filter_by(barber_public_id=data['barber_public_id']).first()
     open_hours, close_hours = string_to_list(all_open_hours)
-    barber_data = {'barber_public_id': barber.barber_public_id, 'phone_num': barber.phone_num,
-                   'open_hour': open_hours, 'close_hour': close_hours, 'location': barber.address}
+
+    summary = {}
+    barber_data = {}
+    barber_data['phone_num'] = barber.phone_num
+    barber_data['open_hour'] = open_hours
+    barber_data['close_hour'] = close_hours
+    summary['sentence'] = barber.sentence
+    summary['headline'] = barber.headline
+    barber_data['summary'] = summary
+    barber_data['location'] = barber.location
 
     return jsonify(barber_data)
 

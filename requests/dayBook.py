@@ -1,6 +1,7 @@
 from flask import Blueprint
 from flask import request, jsonify
 from database import db
+from requests.barber import barber_token_required
 from requests.user import token_required
 
 daybook_bp = Blueprint('appointment_api_daybook', __name__)
@@ -89,9 +90,10 @@ def create(current_barber):
 
 
 @daybook_bp.route('/getDayHours', methods=['GET'])
-def get_hours():
+@barber_token_required
+def get_hours(current_barber):
     data = request.get_json()
-    hours = DayBook.query.filter_by(barber_public_id=data['barber_public_id'], day=data['day'], month=data['month'],
+    hours = DayBook.query.filter_by(barber_public_id=current_barber.public_id, day=data['day'], month=data['month'],
                                     year=data['year']).first()
     if not hours:
         return jsonify({'message': 'This barber do not work in this day!'})
@@ -436,3 +438,287 @@ def updateTime(str, day_book, bool1):
     if str == "22:45":
         day_book.t22_45 = bool1
         db.session.commit()
+
+
+def appointment_amount_of_time(start_time, appointment_len):
+    appointment_len = int(appointment_len)
+    hour_id = 0
+    end_time = ""
+    if start_time == "7:00" or start_time == "07:00":
+        hour_id = 0
+    if start_time == "7:15" or start_time == "07:15":
+        hour_id = 1
+        db.session.commit()
+    if start_time == "7:30" or start_time == "07:30":
+        hour_id = 2
+    if start_time == "7:45" or start_time == "07:45":
+        hour_id = 3
+    if start_time == "8:00" or start_time == "08:00":
+        hour_id = 4
+    if start_time == "8:15" or start_time == "08:15":
+        hour_id = 5
+    if start_time == "8:30" or start_time == "08:30":
+        hour_id = 6
+    if start_time == "8:45" or start_time == "08:45":
+        hour_id = 7
+    if start_time == "9:00" or start_time == "09:00":
+        hour_id = 8
+    if start_time == "9:15" or start_time == "09:15":
+        hour_id = 9
+    if start_time == "9:30" or start_time == "09:30":
+        hour_id = 10
+    if start_time == "9:45" or start_time == "09:45":
+        hour_id = 11
+    if start_time == "10:00":
+        hour_id = 12
+    if start_time == "10:15":
+        hour_id = 13
+    if start_time == "10:30":
+        hour_id = 14
+    if start_time == "10:45":
+        hour_id = 15
+    if start_time == "11:00":
+        hour_id = 16
+    if start_time == "11:15":
+        hour_id = 17
+    if start_time == "11:30":
+        hour_id = 18
+    if start_time == "11:45":
+        hour_id = 19
+    if start_time == "12:00":
+        hour_id = 20
+    if start_time == "12:15":
+        hour_id = 21
+    if start_time == "12:30":
+        hour_id = 22
+    if start_time == "12:45":
+        hour_id = 23
+    if start_time == "13:00":
+        hour_id = 24
+    if start_time == "13:15":
+        hour_id = 25
+    if start_time == "13:30":
+        hour_id = 26
+    if start_time == "13:45":
+        hour_id = 27
+    if start_time == "14:00":
+        hour_id = 28
+    if start_time == "14:15":
+        hour_id = 29
+    if start_time == "14:30":
+        hour_id = 30
+    if start_time == "14:45":
+        hour_id = 31
+    if start_time == "15:00":
+        hour_id = 32
+    if start_time == "15:15":
+        hour_id = 33
+    if start_time == "15:30":
+        hour_id = 34
+    if start_time == "15:45":
+        hour_id = 35
+    if start_time == "16:00":
+        hour_id = 36
+    if start_time == "16:15":
+        hour_id = 37
+    if start_time == "16:30":
+        hour_id = 38
+    if start_time == "16:45":
+        hour_id = 39
+    if start_time == "17:00":
+        hour_id = 40
+    if start_time == "17:15":
+        hour_id = 41
+    if start_time == "17:30":
+        hour_id = 42
+    if start_time == "17:45":
+        hour_id = 43
+    if start_time == "18:00":
+        hour_id = 44
+    if start_time == "18:15":
+        hour_id = 45
+    if start_time == "18:30":
+        hour_id = 46
+    if start_time == "18:45":
+        hour_id = 47
+    if start_time == "19:00":
+        hour_id = 48
+    if start_time == "19:15":
+        hour_id = 49
+    if start_time == "19:30":
+        hour_id = 50
+    if start_time == "19:45":
+        hour_id = 51
+    if start_time == "20:00":
+        hour_id = 52
+    if start_time == "20:15":
+        hour_id = 53
+    if start_time == "20:30":
+        hour_id = 54
+    if start_time == "20:45":
+        hour_id = 55
+    if start_time == "21:00":
+        hour_id = 56
+    if start_time == "21:15":
+        hour_id = 57
+    if start_time == "21:30":
+        hour_id = 58
+    if start_time == "21:45":
+        hour_id = 59
+    if start_time == "22:00":
+        hour_id = 60
+    if start_time == "22:15":
+        hour_id = 61
+    if start_time == "22:30":
+        hour_id = 62
+    if start_time == "22:45":
+        hour_id = 63
+
+    if appointment_len == 15:
+        hour_id += 1
+    if appointment_len == 30:
+        hour_id += 2
+    if appointment_len == 45:
+        hour_id += 3
+    if appointment_len == 60:
+        hour_id += 4
+    if appointment_len == 75:
+        hour_id += 5
+    if appointment_len == 90:
+        hour_id += 6
+    if appointment_len == 105:
+        hour_id += 7
+    if appointment_len == 120:
+        hour_id += 8
+
+    if hour_id == 0:
+        end_time = "07:00"
+    if hour_id == 1:
+        end_time = "07:15"
+        db.session.commit()
+    if hour_id == 2:
+        end_time = "07:30"
+    if hour_id == 3:
+        end_time = "07:45"
+    if hour_id == 4:
+        end_time = "08:00"
+    if hour_id == 5:
+        end_time = "08:15"
+    if hour_id == 6:
+        end_time = "08:30"
+    if hour_id == 7:
+        end_time = "08:45"
+    if hour_id == 8:
+        end_time = "09:00"
+    if hour_id == 9:
+        end_time = "09:15"
+    if hour_id == 10:
+        end_time = "09:30"
+    if hour_id == 11:
+        end_time = "09:45"
+    if hour_id == 12:
+        end_time = "10:00"
+    if hour_id == 13:
+        end_time = "10:15"
+    if hour_id == 14:
+        end_time = "10:30"
+    if hour_id == 15:
+        end_time = "10:45"
+    if hour_id == 16:
+        end_time = "11:00"
+    if hour_id == 17:
+        end_time = "11:15"
+    if hour_id == 18:
+        end_time = "11:30"
+    if hour_id == 19:
+        end_time = "11:45"
+    if hour_id == 20:
+        end_time = "12:00"
+    if hour_id == 21:
+        end_time = "12:15"
+    if hour_id == 22:
+        end_time = "12:30"
+    if hour_id == 23:
+        end_time = "12:45"
+    if hour_id == 24:
+        end_time = "13:00"
+    if hour_id == 25:
+        end_time = "13:15"
+    if hour_id == 26:
+        end_time = "13:30"
+    if hour_id == 27:
+        end_time = "13:45"
+    if hour_id == 28:
+        end_time = "14:00"
+    if hour_id == 29:
+        end_time = "14:15"
+    if hour_id == 30:
+        end_time = "14:30"
+    if hour_id == 31:
+        end_time = "14:45"
+    if hour_id == 32:
+        end_time = "15:00"
+    if hour_id == 33:
+        end_time = "15:15"
+    if hour_id == 34:
+        end_time = "15:30"
+    if hour_id == 35:
+        end_time = "15:45"
+    if hour_id == 36:
+        end_time = "16:00"
+    if hour_id == 37:
+        end_time = "16:15"
+    if hour_id == 38:
+        end_time = "16:30"
+    if hour_id == 39:
+        end_time = "16:45"
+    if hour_id == 40:
+        end_time = "17:00"
+    if hour_id == 41:
+        end_time = "17:15"
+    if hour_id == 42:
+        end_time = "17:30"
+    if hour_id == 43:
+        end_time = "17:45"
+    if hour_id == 44:
+        end_time = "18:00"
+    if hour_id == 45:
+        end_time = "18:15"
+    if hour_id == 46:
+        end_time = "18:30"
+    if hour_id == 47:
+        end_time = "18:45"
+    if hour_id == 48:
+        end_time = "19:00"
+    if hour_id == 49:
+        end_time = "19:15"
+    if hour_id == 50:
+        end_time = "19:30"
+    if hour_id == 51:
+        end_time = "19:45"
+    if hour_id == 52:
+        end_time = "20:00"
+    if hour_id == 53:
+        end_time = "20:15"
+    if hour_id == 54:
+        end_time = "20:30"
+    if hour_id == 55:
+        end_time = "20:45"
+    if hour_id == 56:
+        end_time = "21:00"
+    if hour_id == 57:
+        end_time = "21:15"
+    if hour_id == 58:
+        end_time = "21:30"
+    if hour_id == 59:
+        end_time = "21:45"
+    if hour_id == 60:
+        end_time = "22:00"
+    if hour_id == 61:
+        end_time = "22:15"
+    if hour_id == 62:
+        end_time = "22:30"
+    if hour_id == 63:
+        end_time = "22:45"
+
+    return end_time

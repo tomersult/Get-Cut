@@ -8,6 +8,7 @@ from requests.favorites import favorite_bp
 from requests.barber_information import barber_information_bp
 from requests.barber_haircut_types import barber_haircut_bp
 from requests.dayBook import daybook_bp
+from requests.rating import rating_bp
 
 app = Flask(__name__)
 
@@ -29,6 +30,7 @@ def create_app():
     app.register_blueprint(barber_information_bp, url_prefix='')
     app.register_blueprint(barber_haircut_bp, url_prefix='')
     app.register_blueprint(daybook_bp, url_prefix='')
+    app.register_blueprint(rating_bp, url_prefix='')
     return app
 
 
