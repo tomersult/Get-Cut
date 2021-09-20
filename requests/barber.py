@@ -1,7 +1,6 @@
 import uuid
 from datetime import datetime
 from functools import wraps
-
 from flask import Blueprint
 from flask import request, jsonify
 from database import db
@@ -38,9 +37,8 @@ def barber_token_required(f):
         if not token:
             return jsonify({'message': 'Token is missing!'}), 401
 
-        try:
-            current_barber = Barber.query.filter_by(public_id=token).first()
-        except:
+        current_barber = Barber.query.filter_by(public_id=token).first()
+        if not current_barber:
             return jsonify({'message': 'Token is invalid!'}), 401
 
         return f(current_barber, *args, **kwargs)
