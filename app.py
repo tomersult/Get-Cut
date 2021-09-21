@@ -1,7 +1,11 @@
+from threading import Thread
+
 from flask import Flask
 from database import db
 from requests.appointment import appointment_bp
 from requests.barber_images import barber_images_bp
+from requests.notification import notification_bp, check_every_user_notification, auto_func_for_notification
+from requests.notification_counter import notification_counter_bp
 from requests.user import user_bp
 from requests.barber import barber_bp
 from requests.favorites import favorite_bp
@@ -10,6 +14,8 @@ from requests.barber_haircut_types import barber_haircut_bp
 from requests.dayBook import daybook_bp
 from requests.rating import rating_bp
 from requests.user_images import user_images_bp
+from flask_apscheduler import APScheduler
+from apscheduler.schedulers.background import BackgroundScheduler
 
 app = Flask(__name__)
 
@@ -21,6 +27,7 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['BARBER_IMAGE_UPLOAD_PATH'] = 'C:/Users/tomer/PycharmProjects/finalProject/barber_uploads/'
     app.config['USER_IMAGE_UPLOAD_PATH'] = 'C:/Users/tomer/PycharmProjects/finalProject/user_uploads/'
+    app.config['BARBER_PROFILE_IMAGE_PATH'] = 'C:/Users/tomer/PycharmProjects/finalProject/barber_profile_images/'
     app.config['ALLOWED_FORMAT'] = ['PNG', 'JPG', 'JPEG', 'GIF']
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:1234@localhost/users_db'
     db.init_app(app)
@@ -34,6 +41,8 @@ def create_app():
     app.register_blueprint(rating_bp, url_prefix='')
     app.register_blueprint(barber_images_bp, url_prefix='')
     app.register_blueprint(user_images_bp, url_prefix='')
+    app.register_blueprint(notification_bp, url_prefix='')
+    app.register_blueprint(notification_counter_bp, url_prefix='')
     return app
 
 
@@ -45,4 +54,7 @@ def setup_database(app):
 if __name__ == "__main__":
     app = create_app()
     setup_database(app)
+    thread = Thread(target=auto_func_for_notification)
+    thread.start()
     app.run(host=app.config['IP'], debug=True)
+

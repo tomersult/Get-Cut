@@ -4,6 +4,7 @@ import uuid
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 from database import db
+from requests.notification_counter import NotificationCounter
 
 user_bp = Blueprint('account_api_user', __name__)
 
@@ -64,10 +65,14 @@ def create_user():
             return jsonify({'message': 'This email already exist!'}), 401
 
     hashed_password = generate_password_hash(data['password'], method='sha256')
-
-    new_user = User(public_id=str(uuid.uuid4()), name=data['userName'], password=hashed_password, email=data['email'],
+    public_id = str(uuid.uuid4())
+    new_user = User(public_id=public_id, name=data['userName'], password=hashed_password, email=data['email'],
                     city=data['city'], gender=data['gender'], dateOfBirth=data['dateOfBirth'])
     db.session.add(new_user)
+    db.session.commit()
+
+    new_notification_counter = NotificationCounter(user_public_id=public_id, counter=0)
+    db.session.add(new_notification_counter)
     db.session.commit()
 
     return jsonify({'message': 'New user created!'})

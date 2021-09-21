@@ -100,13 +100,13 @@ def create_info(current_barber):
 
 
 @barber_information_bp.route('/getBarberInfo', methods=['GET'])
-def get_barber_info():
-    data = request.get_json()
-    barber = BarberInfo.query.filter_by(barber_public_id=data['barber_public_id']).first()
+@barber_token_required
+def get_barber_info(current_barber):
+    barber = BarberInfo.query.filter_by(barber_public_id=current_barber.public_id).first()
     if not barber:
         return jsonify({'message': 'This barber did not fill information yet!'})
 
-    all_open_hours = OpenHours.query.filter_by(barber_public_id=data['barber_public_id']).first()
+    all_open_hours = OpenHours.query.filter_by(barber_public_id=current_barber.public_id).first()
     open_hours, close_hours = string_to_list(all_open_hours)
 
     summary = {}

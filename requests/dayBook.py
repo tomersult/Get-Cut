@@ -92,9 +92,11 @@ def create(current_barber):
 @daybook_bp.route('/getDayHours', methods=['GET'])
 @barber_token_required
 def get_hours(current_barber):
-    data = request.get_json()
-    hours = DayBook.query.filter_by(barber_public_id=current_barber.public_id, day=data['day'], month=data['month'],
-                                    year=data['year']).first()
+    day = request.args.get('day')
+    month = request.args.get('month')
+    year = request.args.get('year')
+    hours = DayBook.query.filter_by(barber_public_id=current_barber.public_id, day=day, month=month,
+                                    year=year).first()
     if not hours:
         return jsonify({'message': 'This barber do not work in this day!'})
 

@@ -1,10 +1,13 @@
+import base64
 import uuid
 from datetime import datetime
 from functools import wraps
-from flask import Blueprint
+from flask import Blueprint, current_app
 from flask import request, jsonify
 from database import db
 from requests.user import token_required
+from PIL import Image
+import io
 
 barber_bp = Blueprint('account_api_barber', __name__)
 
@@ -59,11 +62,12 @@ def create():
             return jsonify({'message': 'This barber already created!'})
 
     new_public_id = str(uuid.uuid4())
-
+    file_name = new_public_id + '.jpeg'
+    save_image(file_name, current_app.config['BARBER_PROFILE_IMAGE_PATH'], data['picture'])
     new_barber = Barber(public_id=new_public_id, barber_name=data['barber_name'],
-                        location_lat=data['location_lat'], location_lng=data['location_lng'],
-                        grade=grade, followers=followers, picture=data['picture'], creation_time=creation_time,
-                        sentence=data['sentence'], headline=data['headline'], location=data['location'])
+                        location_lat=data['exactLocation']['location_lat'], location_lng=data['exactLocation']['location_lng'],
+                        grade=grade, followers=followers, picture=file_name, creation_time=creation_time,
+                        sentence=data['summary']['sentence'], headline=data['summary']['headline'], location=data['location'])
     db.session.add(new_barber)
     db.session.commit()
     return jsonify({'message': 'New barber created!'})
@@ -78,6 +82,12 @@ def get_barber(public_id):
     exact_location = {}
     summary = {}
 
+    try:
+        with open(current_app.config['BARBER_PROFILE_IMAGE_PATH'] + barber.picture, "rb") as image_file:
+            encoded_string = base64.b64encode(image_file.read())
+    except:
+        return jsonify({'message': 'barber dont have profile image!'})
+
     barber_data = {}
     barber_data['public_id'] = barber.public_id
     barber_data['barber_name'] = barber.barber_name
@@ -86,7 +96,7 @@ def get_barber(public_id):
     barber_data['exact_location'] = exact_location
     barber_data['grade'] = barber.grade
     barber_data['followers'] = barber.followers
-    barber_data['picture'] = barber.picture
+    barber_data['picture'] = str(encoded_string)
     summary['creation_time'] = barber.creation_time
     summary['sentence'] = barber.sentence
     summary['headline'] = barber.headline
@@ -103,6 +113,12 @@ def get_all_barbers():
     summary = {}
 
     for barber in barbers:
+        try:
+            with open(current_app.config['BARBER_PROFILE_IMAGE_PATH'] + barber.picture, "rb") as image_file:
+                encoded_string = base64.b64encode(image_file.read())
+        except:
+            return jsonify({'message': 'barber dont have profile image!'})
+
         barber_data = {}
         barber_data['public_id'] = barber.public_id
         barber_data['barber_name'] = barber.barber_name
@@ -111,7 +127,7 @@ def get_all_barbers():
         barber_data['exact_location'] = exact_location
         barber_data['grade'] = barber.grade
         barber_data['followers'] = barber.followers
-        barber_data['picture'] = barber.picture
+        barber_data['picture'] = str(encoded_string)
         summary['creation_time'] = barber.creation_time
         summary['sentence'] = barber.sentence
         summary['headline'] = barber.headline
@@ -131,6 +147,11 @@ def get_my_city_barbers(user_public_id):
     summary = {}
 
     for barber in barbers:
+        try:
+            with open(current_app.config['BARBER_PROFILE_IMAGE_PATH'] + barber.picture, "rb") as image_file:
+                encoded_string = base64.b64encode(image_file.read())
+        except:
+            return jsonify({'message': 'barber dont have profile image!'})
         favorite_bool = True
         favorite = Favorite.query.filter_by(barber_public_id=barber.public_id).first()
         if not favorite:
@@ -144,7 +165,7 @@ def get_my_city_barbers(user_public_id):
         barber_data['exact_location'] = exact_location
         barber_data['grade'] = barber.grade
         barber_data['followers'] = barber.followers
-        barber_data['picture'] = barber.picture
+        barber_data['picture'] = str(encoded_string)
         barber_data['favorite'] = favorite_bool
         summary['creation_time'] = barber.creation_time
         summary['sentence'] = barber.sentence
@@ -173,3 +194,10 @@ def delete_barber(public_id):
     db.session.commit()
 
     return jsonify({'message': 'The barber has been deleted!'})
+
+
+def save_image(file_name, path, image_string):
+    image = base64.b64decode(str(image_string))
+    image_path = (path + file_name)
+    img = Image.open(io.BytesIO(image))
+    img.save(image_path, 'jpeg')

@@ -1,9 +1,8 @@
-from requests.barber import barber_token_required
+from requests.barber import barber_token_required, save_image
 from flask import Blueprint, request, jsonify, current_app
 from database import db
 import base64
-from PIL import Image
-import io
+
 
 barber_images_bp = Blueprint('account_api_barber_images', __name__)
 
@@ -13,7 +12,6 @@ class BarberImages(db.Model):
     image_name = db.Column(db.String(80))
     barber_public_id = db.Column(db.String(50))
     description = db.Column(db.String(250))
-    profile = db.Column(db.Boolean, unique=False, default=False)
 
 
 def allowed_image(filename):
@@ -32,21 +30,20 @@ def allowed_image(filename):
 @barber_token_required
 def add_image(current_barber):
     data = request.get_json()
-    file_name = data['image_name']
     images = BarberImages.query.all()
+    id_num = 0
     for one_image in images:
-        if one_image.image_name == file_name:
-            return jsonify({'message': 'Change image name !'})
+        id_num = one_image.id
+    if id_num != 0:
+        id_num += 1
+    file_name = '(' + str(id_num) + ')' + current_barber.public_id + '.jpeg'
     if not allowed_image(file_name):
         return jsonify({'message': 'Image format not allowed'})
 
-    image = base64.b64decode(str(data['image']))
-    image_path = (current_app.config['BARBER_IMAGE_UPLOAD_PATH'] + file_name)
-    img = Image.open(io.BytesIO(image))
-    img.save(image_path, 'jpeg')
+    save_image(file_name, current_app.config['BARBER_IMAGE_UPLOAD_PATH'], str(data['image']))
 
     new_barber_image = BarberImages(barber_public_id=current_barber.public_id, image_name=file_name,
-                                    description=data['description'], profile=data['profile'])
+                                    description=data['description'])
     db.session.add(new_barber_image)
     db.session.commit()
     return jsonify({'message': 'New image added!'})
@@ -66,8 +63,6 @@ def get_all_barber_images(current_barber):
         image_data = {}
         image_data['image'] = str(encoded_string)
         image_data['description'] = one_image.description
-        image_data['profile'] = one_image.profile
-        image_data['image_name'] = one_image.image_name
         output.append(image_data)
     return jsonify(output)
 
