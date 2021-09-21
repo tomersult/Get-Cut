@@ -4,7 +4,7 @@ import uuid
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 from database import db
-from requests.notification_counter import NotificationCounter
+from request.notification_counter import NotificationCounter
 
 user_bp = Blueprint('account_api_user', __name__)
 

@@ -2,10 +2,10 @@ import datetime
 from flask import Blueprint
 from flask import jsonify
 from database import db
-from requests.barber import Barber
-from requests.notification_counter import add_one_to_notification_counter
-from requests.user import User
-from requests.appointment import Appointment
+from request.barber import Barber
+from request.notification_counter import add_one_to_notification_counter
+from request.user import User
+from request.appointment import Appointment
 import schedule
 import time
 import requests
@@ -90,7 +90,7 @@ def check_every_user_notification():
     for user in users:
         notifications = predict_new_appointment(user)
         if not notifications:
-            print(user.name + 'Do not have notifications today')
+            print(user.name + ' does not have notifications today')
         else:
             for appointment in notifications:
                 barber = Barber.query.filter_by(public_id=appointment.barber_public_id).first()
@@ -107,16 +107,15 @@ def check_every_user_notification():
                 db.session.add(new_notification)
                 db.session.commit()
                 add_one_to_notification_counter(user.public_id)
-    print('done')
+    return jsonify({'message': 'Sent all the relevant notification !'})
 
 
 def auto_request():
-    r = requests.get('http://127.0.0.1:5000/auto')
+    requests.get('http://127.0.0.1:5000/auto')
 
 
 def auto_func_for_notification():
-    schedule.every(20).seconds.do(auto_request)
-    # schedule.every().day.at("20:55").do(check_every_user_notification)
+    schedule.every().day.at("00:22").do(auto_request)
     while True:
         schedule.run_pending()
-        time.sleep(1)
+        time.sleep(61)

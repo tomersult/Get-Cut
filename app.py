@@ -2,20 +2,19 @@ from threading import Thread
 
 from flask import Flask
 from database import db
-from requests.appointment import appointment_bp
-from requests.barber_images import barber_images_bp
-from requests.notification import notification_bp, check_every_user_notification, auto_func_for_notification
-from requests.notification_counter import notification_counter_bp
-from requests.user import user_bp
-from requests.barber import barber_bp
-from requests.favorites import favorite_bp
-from requests.barber_information import barber_information_bp
-from requests.barber_haircut_types import barber_haircut_bp
-from requests.dayBook import daybook_bp
-from requests.rating import rating_bp
-from requests.user_images import user_images_bp
-from flask_apscheduler import APScheduler
-from apscheduler.schedulers.background import BackgroundScheduler
+from request.appointment import appointment_bp
+from request.barber_images import barber_images_bp
+from request.notification import notification_bp, auto_func_for_notification
+from request.notification_counter import notification_counter_bp
+from request.user import user_bp
+from request.barber import barber_bp
+from request.favorites import favorite_bp
+from request.barber_information import barber_information_bp
+from request.barber_haircut_types import barber_haircut_bp
+from request.dayBook import daybook_bp
+from request.rating import rating_bp
+from request.user_images import user_images_bp
+
 
 app = Flask(__name__)
 
@@ -56,5 +55,5 @@ if __name__ == "__main__":
     setup_database(app)
     thread = Thread(target=auto_func_for_notification)
     thread.start()
-    app.run(host=app.config['IP'], debug=True)
+    app.run(host=app.config['IP'], debug=True, use_reloader=False)
 

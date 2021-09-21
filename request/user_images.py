@@ -4,7 +4,7 @@ import base64
 from PIL import Image
 import io
 
-from requests.user import token_required
+from request.user import token_required
 
 user_images_bp = Blueprint('account_api_user_images', __name__)
 

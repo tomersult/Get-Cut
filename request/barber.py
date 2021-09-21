@@ -5,7 +5,7 @@ from functools import wraps
 from flask import Blueprint, current_app
 from flask import request, jsonify
 from database import db
-from requests.user import token_required
+from request.user import token_required
 from PIL import Image
 import io
 
@@ -141,7 +141,7 @@ def get_all_barbers():
 @token_required
 def get_my_city_barbers(user_public_id):
     barbers = Barber.query.filter_by(location=user_public_id.city).all()
-    from requests.favorites import Favorite
+    from request.favorites import Favorite
     output = []
     exact_location = {}
     summary = {}
@@ -179,7 +179,7 @@ def get_my_city_barbers(user_public_id):
 @barber_bp.route('/barber/<public_id>', methods=['DELETE'])
 def delete_barber(public_id):
     barber = Barber.query.filter_by(public_id=public_id).first()
-    from requests.favorites import Favorite
+    from request.favorites import Favorite
     followers = Favorite.query.all()
 
     for follow in followers:
