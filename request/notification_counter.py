@@ -11,9 +11,7 @@ class NotificationCounter(db.Model):
 notification_counter_bp = Blueprint('account_api_notification_counter', __name__)
 
 
-@notification_counter_bp.route('/resetNotification', methods=['PUT'])
-def reset_notification_counter():
-    user_public_id = request.args.get('user_public_id')
+def reset_notification_counter(user_public_id):
     notification_counter = NotificationCounter.query.filter_by(user_public_id=user_public_id).first()
     notification_counter.counter = 0
     db.session.commit()

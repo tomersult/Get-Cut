@@ -1,10 +1,11 @@
+import base64
 import datetime
-from flask import Blueprint
+from flask import Blueprint, current_app
 from flask import jsonify
 from database import db
 from request.barber import Barber
-from request.notification_counter import add_one_to_notification_counter
-from request.user import User
+from request.notification_counter import add_one_to_notification_counter, reset_notification_counter
+from request.user import User, token_required
 from request.appointment import Appointment
 import schedule
 import time
@@ -25,6 +26,38 @@ class Notification(db.Model):
 
 
 notification_bp = Blueprint('account_api_notification', __name__)
+
+
+@notification_bp.route('/notifications', methods=['GET'])
+@token_required
+def get_user_notifications(current_user):
+    notifications = Notification.query.filter_by(user_public_id=current_user.public_id).all()
+    if not notifications:
+        return jsonify({'message': 'This user does not have notifications yet'})
+
+    output = []
+    for notification in notifications:
+        # reset notification counter of this user
+        reset_notification_counter(current_user.public_id)
+        barber = Barber.query.filter_by(public_id=notification.barber_public_id).first()
+        try:
+            with open(current_app.config['BARBER_PROFILE_IMAGE_PATH'] + barber.picture, "rb") as image_file:
+                encoded_string = base64.b64encode(image_file.read())
+        except:
+            return jsonify({'message': 'barber dont have profile image!'})
+
+        notification_data = {}
+        notification_data['barber_public_id'] = notification.barber_public_id
+        notification_data['user_public_id'] = notification.user_public_id
+        notification_data['barber_name'] = notification.barber_name
+        notification_data['barber_avatar'] = str(encoded_string)
+        notification_data['date'] = notification.date
+        notification_data['time'] = notification.time
+        notification_data['was_read'] = notification.was_read
+        notification_data['message'] = notification.message
+        notification_data['short_message'] = notification.short_message
+        output.append(notification_data)
+    return jsonify(output)
 
 
 def predict_new_appointment(current_user):
@@ -112,10 +145,11 @@ def check_every_user_notification():
 
 def auto_request():
     requests.get('http://127.0.0.1:5000/auto')
+    requests.get('http://127.0.0.1:5000/daybookPlusDay')
 
 
 def auto_func_for_notification():
-    schedule.every().day.at("00:22").do(auto_request)
+    schedule.every().day.at("19:22").do(auto_request)
     while True:
         schedule.run_pending()
         time.sleep(61)

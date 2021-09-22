@@ -122,10 +122,9 @@ def get_barber_info(current_barber):
     return jsonify(barber_data)
 
 
-@barber_information_bp.route('/daybookPlusDay', methods=['PUT'])
+@barber_information_bp.route('/daybookPlusDay', methods=['GET'])
 # every day we open one more day for each barber
 def daybook_plus_day():
-    data = request.get_json()
     creation_time = datetime.datetime.now()
     barbers = BarberInfo.query.all()
     if not barbers:
@@ -133,29 +132,32 @@ def daybook_plus_day():
 
     for barber in barbers:
         open_hours = OpenHours.query.filter_by(barber_public_id=barber.barber_public_id).first()
-        # the number of the day in open_hours table
-        open_day_num = ((((datetime.datetime.now().weekday() + barber.days_for_daybook) % 7) + 1) % 7)
-        close_day_num = open_day_num + 7
-        my_day_time = creation_time + datetime.timedelta(days=barber.days_for_daybook + 1)
-        new_day = DayBook(barber_public_id=barber.barber_public_id,
-                          day=str(creation_time.day + barber.days_for_daybook + 1),
-                          month=my_day_time.month,
-                          year=my_day_time.year)
-        db.session.add(new_day)
+        if not open_hours:
+            print(barber.barber_name + ' still does not have an open hours ')
+        else:
+            # the number of the day in open_hours table
+            open_day_num = ((((datetime.datetime.now().weekday() + 14) % 7) + 1) % 7)
+            close_day_num = open_day_num + 7
+            my_day_time = creation_time + datetime.timedelta(days=14 + 1)
+            new_day = DayBook(barber_public_id=barber.barber_public_id,
+                              day=str(creation_time.day + 14 + 1),
+                              month=my_day_time.month,
+                              year=my_day_time.year)
+            db.session.add(new_day)
 
-        my_day_open_hours, my_day_close_hours = get_my_day_open_hours(open_day_num, open_hours)
-        if my_day_open_hours is not None:
-            length = len(my_day_open_hours)
+            my_day_open_hours, my_day_close_hours = get_my_day_open_hours(open_day_num, open_hours)
+            if my_day_open_hours is not None:
+                length = len(my_day_open_hours)
 
-        for j in range(length):
-            open1 = datetime.datetime.strptime(my_day_open_hours[j], '%H:%M')
-            my_day_time = my_day_time.replace(minute=open1.minute, hour=open1.hour, second=0, microsecond=0)
-            end = datetime.datetime.strptime(my_day_close_hours[j], '%H:%M')
-            end_time = my_day_time.replace(minute=end.minute, hour=end.hour, second=0, microsecond=0)
-            while my_day_time != end_time:
-                str1 = my_day_time.strftime("%H:%M")
-                updateTime(str1, new_day, False)
-                my_day_time = my_day_time + datetime.timedelta(minutes=15)
+            for j in range(length):
+                open1 = datetime.datetime.strptime(my_day_open_hours[j], '%H:%M')
+                my_day_time = my_day_time.replace(minute=open1.minute, hour=open1.hour, second=0, microsecond=0)
+                end = datetime.datetime.strptime(my_day_close_hours[j], '%H:%M')
+                end_time = my_day_time.replace(minute=end.minute, hour=end.hour, second=0, microsecond=0)
+                while my_day_time != end_time:
+                    str1 = my_day_time.strftime("%H:%M")
+                    updateTime(str1, new_day, False)
+                    my_day_time = my_day_time + datetime.timedelta(minutes=15)
 
     return jsonify({'message': 'new day has been added to all barbers'})
 
