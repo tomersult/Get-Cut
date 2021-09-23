@@ -13,7 +13,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     public_id = db.Column(db.String(50), unique=True)
     name = db.Column(db.String(50))
-    password = db.Column(db.String(80))
+    password = db.Column(db.String(200))
     email = db.Column(db.String(80))
     city = db.Column(db.String(50))
     gender = db.Column(db.String(8))
@@ -67,7 +67,7 @@ def create_user():
     hashed_password = generate_password_hash(data['password'], method='sha256')
     public_id = str(uuid.uuid4())
     new_user = User(public_id=public_id, name=data['userName'], password=hashed_password, email=data['email'],
-                    city=data['city'], gender=data['gender'], dateOfBirth=data['dateOfBirth'])
+                    city=data['location'], gender=data['gender'], dateOfBirth=data['dateOfBirth'])
     db.session.add(new_user)
     db.session.commit()
 

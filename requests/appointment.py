@@ -73,13 +73,13 @@ def get_user_appointments(current_user):
         date['month'] = appointment.month
         date['year'] = appointment.year
         appointment_data['price'] = appointment.price
-        appointment_data['amount_of_time'] = appointment.amount_of_time
+        appointment_data['amountOfTime'] = appointment.amount_of_time
         appointment_data['time'] = appointment.start + '-' + end_time
         appointment_data['date'] = date
         appointment_data['gender'] = appointment.gender
-        appointment_data['barber_public_id'] = appointment.barber_public_id
-        appointment_data['haircut_type'] = appointment.haircut_type
-        appointment_data['barber_name'] = barber_name
+        appointment_data['barberId'] = appointment.barber_public_id
+        appointment_data['type'] = appointment.haircut_type
+        appointment_data['barberName'] = barber_name
         output.append(appointment_data)
 
     return jsonify(output)

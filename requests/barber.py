@@ -81,7 +81,6 @@ def get_barber(public_id):
 
     exact_location = {}
     summary = {}
-
     try:
         with open(current_app.config['BARBER_PROFILE_IMAGE_PATH'] + barber.picture, "rb") as image_file:
             encoded_string = base64.b64encode(image_file.read())
@@ -128,7 +127,7 @@ def get_all_barbers():
         barber_data['grade'] = barber.grade
         barber_data['followers'] = barber.followers
         barber_data['picture'] = str(encoded_string)
-        summary['creation_time'] = barber.creation_time
+        summary['time'] = barber.creation_time
         summary['sentence'] = barber.sentence
         summary['headline'] = barber.headline
         barber_data['summary'] = summary
@@ -157,12 +156,12 @@ def get_my_city_barbers(user_public_id):
         if not favorite:
             favorite_bool = False
         barber_data = {}
-        barber_data['public_id'] = barber.public_id
-        barber_data['barber_name'] = barber.barber_name
+        barber_data['id'] = barber.public_id
+        barber_data['barberName'] = barber.barber_name
         barber_data['location'] = barber.location
         exact_location['location_lat'] = barber.location_lat
         exact_location['location_lng'] = barber.location_lng
-        barber_data['exact_location'] = exact_location
+        barber_data['exactLocation'] = exact_location
         barber_data['grade'] = barber.grade
         barber_data['followers'] = barber.followers
         barber_data['picture'] = str(encoded_string)

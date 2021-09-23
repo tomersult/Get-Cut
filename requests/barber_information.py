@@ -111,9 +111,9 @@ def get_barber_info(current_barber):
 
     summary = {}
     barber_data = {}
-    barber_data['phone_num'] = barber.phone_num
-    barber_data['open_hour'] = open_hours
-    barber_data['close_hour'] = close_hours
+    barber_data['phoneNumber'] = barber.phone_num
+    barber_data['openHour'] = open_hours
+    barber_data['closeHour'] = close_hours
     summary['sentence'] = barber.sentence
     summary['headline'] = barber.headline
     barber_data['summary'] = summary
