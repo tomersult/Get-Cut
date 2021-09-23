@@ -14,8 +14,6 @@ from requests.barber_haircut_types import barber_haircut_bp
 from requests.dayBook import daybook_bp
 from requests.rating import rating_bp
 from requests.user_images import user_images_bp
-from flask_apscheduler import APScheduler
-from apscheduler.schedulers.background import BackgroundScheduler
 
 app = Flask(__name__)
 
