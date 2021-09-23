@@ -23,9 +23,9 @@ def create_app():
     app.config['SECRET_KEY'] = 'this_is_secret'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:04030403@localhost/users_db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['BARBER_IMAGE_UPLOAD_PATH'] = 'C:/Users/Oriel/PycharmProjects/finalProject/barber_uploads'
-    app.config['USER_IMAGE_UPLOAD_PATH'] = 'C:/Users/Oriel/PycharmProjects/finalProject/user_uploads/'
-    app.config['BARBER_PROFILE_IMAGE_PATH'] = 'C:/Users/Oriel/PycharmProjects/finalProject/barber_profile_images/'
+    app.config['BARBER_IMAGE_UPLOAD_PATH'] = '/Users/oriel/PycharmProjects/finalProject/barber_uploads'
+    app.config['USER_IMAGE_UPLOAD_PATH'] = '/Users/oriel/PycharmProjects/finalProject/user_uploads/'
+    app.config['BARBER_PROFILE_IMAGE_PATH'] = '/Users/oriel/PycharmProjects/finalProject/barber_profile_images/'
     app.config['ALLOWED_FORMAT'] = ['PNG', 'JPG', 'JPEG', 'GIF']
     db.init_app(app)
     app.register_blueprint(user_bp, url_prefix='')

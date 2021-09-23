@@ -41,7 +41,7 @@ def get_user_notifications(current_user):
     output = {}
     notification_list = []
     notification_counter = NotificationCounter.query.filter_by(user_public_id=current_user.public_id).first()
-
+    output["notifications"] = notification_list
     output['unseenNotification'] = notification_counter.counter
     for notification in notifications:
         # reset notification counter of this user
@@ -54,17 +54,15 @@ def get_user_notifications(current_user):
             return jsonify({'message': 'barber dont have profile image!'})
 
         notification_data = {}
-        notification_data['barber_public_id'] = notification.barber_public_id
-        notification_data['user_public_id'] = notification.user_public_id
-        notification_data['barber_name'] = notification.barber_name
-        notification_data['barber_avatar'] = str(encoded_string)
+        notification_data['id'] = notification.barber_public_id
+        notification_data['barberName'] = notification.barber_name
+        notification_data['barberAvatar'] = str(encoded_string)
         notification_data['date'] = notification.date
         notification_data['time'] = notification.time
-        notification_data['was_read'] = notification.was_read
+        notification_data['wasRead'] = notification.was_read
         notification_data['message'] = notification.message
-        notification_data['short_message'] = notification.short_message
-        notification_list.append(notification_data)
-    output.append(notification_list)
+        notification_data['shortMessage'] = notification.short_message
+        output["notifications"].append(notification_data)
     return jsonify(output)
 
 

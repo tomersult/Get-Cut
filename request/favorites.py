@@ -17,11 +17,12 @@ class Favorite(db.Model):
 @token_required
 def add_favorite_follow(current_user):
     data = request.get_json()
-
     favorites = Favorite.query.all()
     for favorite in favorites:
         if (favorite.user_public_id == current_user.public_id) & (favorite.barber_public_id == data['barber_public_id']):
-            return jsonify({'message': 'this barber already in favorites!'})
+            db.session.delete(favorite)
+            db.session.commit()
+            return jsonify({'message': 'Now you unfollow this barber !'})
     new_favorite = Favorite(user_public_id=current_user.public_id, barber_public_id=data['barber_public_id'])
     db.session.add(new_favorite)
     db.session.commit()
