@@ -56,7 +56,7 @@ def create_appointment():
     return jsonify({'message': 'New appointment created!'})
 
 
-# need change !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# delete after check
 @appointment_bp.route('/appointment', methods=['GET'])
 @token_required
 def get_user_appointments(current_user):
@@ -81,6 +81,66 @@ def get_user_appointments(current_user):
         appointment_data['type'] = appointment.haircut_type
         appointment_data['barberName'] = barber_name
         output.append(appointment_data)
+
+    return jsonify(output)
+
+# add to postman
+@appointment_bp.route('/pastAppointment', methods=['GET'])
+@token_required
+def get_user_past_appointments(current_user):
+    appointments = Appointment.query.filter_by(user_public_id=current_user.public_id).all()
+    output = []
+    for appointment in appointments:
+        present = datetime.datetime.now()
+        day = datetime.datetime(int(appointment.year), int(appointment.month), int(appointment.day))
+        if day < present:
+            end_time = appointment_amount_of_time(appointment.start, appointment.amount_of_time)
+            barber = Barber.query.filter_by(public_id=appointment.barber_public_id).first()
+            barber_name = barber.barber_name
+            appointment_data = {}
+            date = {}
+            date['day'] = appointment.day
+            date['month'] = appointment.month
+            date['year'] = appointment.year
+            appointment_data['price'] = appointment.price
+            appointment_data['amountOfTime'] = appointment.amount_of_time
+            appointment_data['time'] = appointment.start + '-' + end_time
+            appointment_data['date'] = date
+            appointment_data['gender'] = appointment.gender
+            appointment_data['barberId'] = appointment.barber_public_id
+            appointment_data['type'] = appointment.haircut_type
+            appointment_data['barberName'] = barber_name
+            output.append(appointment_data)
+
+    return jsonify(output)
+
+# add to postman
+@appointment_bp.route('/futureAppointment', methods=['GET'])
+@token_required
+def get_user_future_appointments(current_user):
+    appointments = Appointment.query.filter_by(user_public_id=current_user.public_id).all()
+    output = []
+    for appointment in appointments:
+        present = datetime.datetime.now()
+        day = datetime.datetime(int(appointment.year), int(appointment.month), int(appointment.day))
+        if day > present:
+            end_time = appointment_amount_of_time(appointment.start, appointment.amount_of_time)
+            barber = Barber.query.filter_by(public_id=appointment.barber_public_id).first()
+            barber_name = barber.barber_name
+            appointment_data = {}
+            date = {}
+            date['day'] = appointment.day
+            date['month'] = appointment.month
+            date['year'] = appointment.year
+            appointment_data['price'] = appointment.price
+            appointment_data['amountOfTime'] = appointment.amount_of_time
+            appointment_data['time'] = appointment.start + '-' + end_time
+            appointment_data['date'] = date
+            appointment_data['gender'] = appointment.gender
+            appointment_data['barberId'] = appointment.barber_public_id
+            appointment_data['type'] = appointment.haircut_type
+            appointment_data['barberName'] = barber_name
+            output.append(appointment_data)
 
     return jsonify(output)
 

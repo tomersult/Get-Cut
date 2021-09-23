@@ -4,7 +4,8 @@ from flask import Blueprint, current_app
 from flask import jsonify
 from database import db
 from request.barber import Barber
-from request.notification_counter import add_one_to_notification_counter, reset_notification_counter
+from request.notification_counter import add_one_to_notification_counter, reset_notification_counter, \
+    NotificationCounter
 from request.user import User, token_required
 from request.appointment import Appointment
 import schedule
@@ -23,6 +24,8 @@ class Notification(db.Model):
     was_read = db.Column(db.Boolean, unique=False, default=False)
     message = db.Column(db.String(200))
     short_message = db.Column(db.String(50))
+    short_header = db.Column(db.String(30))
+    header = db.Column(db.String(50))
 
 
 notification_bp = Blueprint('account_api_notification', __name__)
@@ -35,7 +38,11 @@ def get_user_notifications(current_user):
     if not notifications:
         return jsonify({'message': 'This user does not have notifications yet'})
 
-    output = []
+    output = {}
+    notification_list = []
+    notification_counter = NotificationCounter.query.filter_by(user_public_id=current_user.public_id).first()
+
+    output['unseenNotification'] = notification_counter.counter
     for notification in notifications:
         # reset notification counter of this user
         reset_notification_counter(current_user.public_id)
@@ -56,7 +63,8 @@ def get_user_notifications(current_user):
         notification_data['was_read'] = notification.was_read
         notification_data['message'] = notification.message
         notification_data['short_message'] = notification.short_message
-        output.append(notification_data)
+        notification_list.append(notification_data)
+    output.append(notification_list)
     return jsonify(output)
 
 
@@ -131,8 +139,10 @@ def check_every_user_notification():
                 current_date = str(datetime.datetime.today().date())
                 current_time = str(datetime.datetime.today().time().replace(microsecond=0))
                 message = 'Hello ' + user.name + '! ' + 'I noticed you did not make a ' + appointment.haircut_type + \
-                          'in a long time '
+                          'in a long time - get in to my page and schedule an appointment today!'
                 short_message = 'time to get a ' + appointment.haircut_type
+                short_header = 'New message from '
+                header = 'Time to make an appointment !'
                 new_notification = Notification(barber_public_id=barber.public_id, barber_name=barber.barber_name,
                                                 barber_avatar=barber.picture, user_public_id=user.public_id,
                                                 date=current_date, time=current_time, was_read=False, message=message,

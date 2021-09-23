@@ -4,7 +4,7 @@ from flask import Flask
 from database import db
 from request.appointment import appointment_bp
 from request.barber_images import barber_images_bp
-from request.notification import notification_bp, auto_func_for_notification
+from request.notification import notification_bp, check_every_user_notification, auto_func_for_notification
 from request.notification_counter import notification_counter_bp
 from request.user import user_bp
 from request.barber import barber_bp
@@ -15,7 +15,6 @@ from request.dayBook import daybook_bp
 from request.rating import rating_bp
 from request.user_images import user_images_bp
 
-
 app = Flask(__name__)
 
 
@@ -24,9 +23,9 @@ def create_app():
     app.config['SECRET_KEY'] = 'this_is_secret'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:04030403@localhost/users_db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['BARBER_IMAGE_UPLOAD_PATH'] = '/Users/oriel/PycharmProjects/finalProject/barber_uploads'
-    app.config['USER_IMAGE_UPLOAD_PATH'] = '/Users/oriel/PycharmProjects/finalProject/user_uploads/'
-    app.config['BARBER_PROFILE_IMAGE_PATH'] = '/Users/oriel/PycharmProjects/finalProject/barber_profile_images/'
+    app.config['BARBER_IMAGE_UPLOAD_PATH'] = 'C:/Users/Oriel/PycharmProjects/finalProject/barber_uploads'
+    app.config['USER_IMAGE_UPLOAD_PATH'] = 'C:/Users/Oriel/PycharmProjects/finalProject/user_uploads/'
+    app.config['BARBER_PROFILE_IMAGE_PATH'] = 'C:/Users/Oriel/PycharmProjects/finalProject/barber_profile_images/'
     app.config['ALLOWED_FORMAT'] = ['PNG', 'JPG', 'JPEG', 'GIF']
     db.init_app(app)
     app.register_blueprint(user_bp, url_prefix='')
@@ -54,5 +53,5 @@ if __name__ == "__main__":
     setup_database(app)
     thread = Thread(target=auto_func_for_notification)
     thread.start()
-    app.run(host=app.config['IP'], debug=True, use_reloader=False)
+    app.run(host=app.config['IP'], debug=True)
 
