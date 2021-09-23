@@ -1,8 +1,8 @@
 from flask import Blueprint
 from flask import request, jsonify
 from database import db
-from requests.barber import barber_token_required
-from requests.user import token_required
+from request.barber import barber_token_required
+from request.user import token_required
 
 daybook_bp = Blueprint('appointment_api_daybook', __name__)
 

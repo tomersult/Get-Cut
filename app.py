@@ -14,6 +14,8 @@ from requests.barber_haircut_types import barber_haircut_bp
 from requests.dayBook import daybook_bp
 from requests.rating import rating_bp
 from requests.user_images import user_images_bp
+from flask_apscheduler import APScheduler
+from apscheduler.schedulers.background import BackgroundScheduler
 
 app = Flask(__name__)
 
@@ -27,6 +29,7 @@ def create_app():
     app.config['USER_IMAGE_UPLOAD_PATH'] = '/Users/oriel/PycharmProjects/finalProject/user_uploads/'
     app.config['BARBER_PROFILE_IMAGE_PATH'] = '/Users/oriel/PycharmProjects/finalProject/barber_profile_images/'
     app.config['ALLOWED_FORMAT'] = ['PNG', 'JPG', 'JPEG', 'GIF']
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:1234@localhost/users_db'
     db.init_app(app)
     app.register_blueprint(user_bp, url_prefix='')
     app.register_blueprint(barber_bp, url_prefix='')
