@@ -1,8 +1,8 @@
 from flask import Blueprint
 from flask import request, jsonify
 from database import db
-from requests.barber import Barber
-from requests.user import token_required, User
+from request.barber import Barber
+from request.user import token_required, User
 
 rating_bp = Blueprint('account_api_rating', __name__)
 

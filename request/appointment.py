@@ -1,10 +1,10 @@
 from flask import Blueprint
 from flask import request, jsonify
 from database import db
-from requests.barber import barber_token_required, Barber
-from requests.user import token_required
+from request.barber import barber_token_required, Barber
+from request.user import token_required
 import datetime
-from requests.dayBook import DayBook, updateTime, appointment_amount_of_time
+from request.dayBook import DayBook, updateTime, appointment_amount_of_time
 
 appointment_bp = Blueprint('appointment_api_barber', __name__)
 

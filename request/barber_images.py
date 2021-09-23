@@ -1,4 +1,4 @@
-from requests.barber import barber_token_required, save_image
+from request.barber import barber_token_required, save_image
 from flask import Blueprint, request, jsonify, current_app
 from database import db
 import base64
