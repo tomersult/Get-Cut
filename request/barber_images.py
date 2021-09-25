@@ -58,7 +58,7 @@ def get_all_barber_images(current_barber):
 
     output = []
     for one_image in images:
-        with open(current_app.config['BARBER_IMAGE_UPLOAD_PATH'] + one_image.image_name, "rb") as image_file:
+        with open(current_app.config['BARBER_IMAGE_UPLOAD_PATH'] + "/"+ one_image.image_name, "rb") as image_file:
             encoded_string = base64.b64encode(image_file.read())
         image_data = {}
         image_data['image'] = str(encoded_string)

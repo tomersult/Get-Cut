@@ -13,6 +13,7 @@ class UserImages(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     image_name = db.Column(db.String(80))
     user_public_id = db.Column(db.String(50))
+    description = db.Column(db.String(250))
 
 
 def allowed_image(filename):
@@ -50,7 +51,8 @@ def add_image(current_user):
     img = Image.open(io.BytesIO(image))
     img.save(image_path, 'jpeg')
 
-    new_user_image = UserImages(user_public_id=current_user.public_id, image_name=file_name)
+    new_user_image = UserImages(user_public_id=current_user.public_id, image_name=file_name,
+                                description=data['description'])
     db.session.add(new_user_image)
     db.session.commit()
     return jsonify({'message': 'New image added!'})
@@ -68,5 +70,6 @@ def get_user_profile_images(current_user):
         encoded_string = base64.b64encode(image_file.read())
     image_data = {}
     image_data['image'] = str(encoded_string)
+    image_data['description'] = image.description
     output.append(image_data)
     return jsonify(output)

@@ -88,8 +88,8 @@ def get_user_appointments(current_user):
             past_appointments.append(appointment_data)
         else:
             future_appointments.append(appointment_data)
-    output["Past"] = past_appointments
-    output['Future'] = future_appointments
+    output["past"] = past_appointments
+    output['future'] = future_appointments
 
     return jsonify(output)
 
