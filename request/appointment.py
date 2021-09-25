@@ -82,14 +82,15 @@ def get_user_appointments(current_user):
         appointment_data['barberId'] = appointment.barber_public_id
         appointment_data['type'] = appointment.haircut_type
         appointment_data['barberName'] = barber_name
+        appointment_data['appointmentId'] = appointment.id
         present = datetime.datetime.now()
         day = datetime.datetime(int(appointment.year), int(appointment.month), int(appointment.day))
         if day < present:
             past_appointments.append(appointment_data)
         else:
             future_appointments.append(appointment_data)
-    output["past"] = past_appointments
-    output['future'] = future_appointments
+    output["Past"] = past_appointments
+    output['Future'] = future_appointments
 
     return jsonify(output)
 
@@ -127,25 +128,22 @@ def get_user_past_appointments(current_user):
 
 @appointment_bp.route('/appointment', methods=['DELETE'])
 def delete_appointment():
-    data = request.get_json()
-
-    creation_time = datetime.datetime.now()
-    # initialize the start time of the appointment
-    start_time = datetime.datetime.strptime(data['start'], '%H:%M')
-    temp_time = creation_time.replace(minute=start_time.minute, hour=start_time.hour, second=0, microsecond=0,
-                                      year=int(data['year']), month=int(data['month']), day=int(data['day']))
-    # every time cycle is 15 min
-    num_of_time_cycle = int(int(data['amount_of_time']) / 15)
-
-    appointment = Appointment.query.filter_by(barber_public_id=data['barber_public_id'], day=data['day'],
-                                              month=data['month'], year=data['year'], start=data['start'],
-                                              amount_of_time=data['amount_of_time'], gender=data['gender']).first()
+    appointment_id = int(request.args.get('appointment_id'))
+    appointment = db.session.query(Appointment).get(appointment_id)
     if not appointment:
         return jsonify({'message': 'This barber not available!'})
 
+    creation_time = datetime.datetime.now()
+    # initialize the start time of the appointment
+    start_time = datetime.datetime.strptime(appointment.start, '%H:%M')
+    temp_time = creation_time.replace(minute=start_time.minute, hour=start_time.hour, second=0, microsecond=0,
+                                      year=int(appointment.year), month=int(appointment.month), day=int(appointment.day))
+    # every time cycle is 15 min
+    num_of_time_cycle = int(int(appointment.amount_of_time) / 15)
+
     # get barber day in daybook
-    my_day = DayBook.query.filter_by(barber_public_id=data['barber_public_id'], day=data['day'],
-                                     month=data['month'], year=data['year']).first()
+    my_day = DayBook.query.filter_by(barber_public_id=appointment.barber_public_id, day=appointment.day,
+                                     month=appointment.month, year=appointment.year).first()
     if not my_day:
         return jsonify({'message': 'This barber not available at this day!'})
 
@@ -156,5 +154,5 @@ def delete_appointment():
 
     db.session.delete(appointment)
     db.session.commit()
-    return jsonify({'message': 'The appointment has been deleted! ' + 'User public id:' + data['user_public_id']})
+    return jsonify({'message': 'The appointment has been deleted! ' + 'User public id:' + appointment.user_public_id})
 
