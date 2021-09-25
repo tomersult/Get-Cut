@@ -30,7 +30,7 @@ class Notification(db.Model):
 
 notification_bp = Blueprint('account_api_notification', __name__)
 
-# !
+
 @notification_bp.route('/notifications', methods=['GET'])
 @token_required
 def get_user_notifications(current_user):
