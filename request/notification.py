@@ -11,6 +11,7 @@ from request.appointment import Appointment
 import schedule
 import time
 import requests
+from flask import request, jsonify
 
 
 class Notification(db.Model):
@@ -142,11 +143,24 @@ def check_every_user_notification():
                 new_notification = Notification(barber_public_id=barber.public_id, barber_name=barber.barber_name,
                                                 barber_avatar=barber.picture, user_public_id=user.public_id,
                                                 date=current_date, time=current_time, was_read=False, message=message,
-                                                short_message=short_message)
+                                                short_message=short_message, header=header, short_header=short_header)
                 db.session.add(new_notification)
                 db.session.commit()
                 add_one_to_notification_counter(user.public_id)
     return jsonify({'message': 'Sent all the relevant notification !'})
+
+
+@notification_bp.route('/seenNotification', methods=['PUT'])
+def unseen_to_seen():
+    notification_id = int(request.args.get('notification_id'))
+    notification = db.session.query(Notification).get(notification_id)
+    if not notification:
+        return jsonify({'message': 'Can not find this notification !'})
+    if notification.was_read:
+        return jsonify({'message': 'This notification already seen!'})
+    notification.was_read = True
+    db.session.commit()
+    return jsonify({'message': 'The notification changed to seen!'})
 
 
 def auto_request():
@@ -159,3 +173,25 @@ def auto_func_for_notification():
     while True:
         schedule.run_pending()
         time.sleep(61)
+
+
+# need to delete
+@notification_bp.route('/createNotification', methods=['POST'])
+@token_required
+def create_new_notification(current_user):
+    data = request.get_json()
+    barber = Barber.query.filter_by(public_id=data['barber_public_id']).first()
+    current_date = str(datetime.datetime.today().date())
+    current_time = str(datetime.datetime.today().time().replace(microsecond=0))
+    message = data['message']
+    short_message = data['short_message']
+    short_header = data['short_header']
+    header = data['header']
+    new_notification = Notification(barber_public_id=barber.public_id, barber_name=barber.barber_name,
+                                    barber_avatar=barber.picture, user_public_id=current_user.public_id,
+                                    date=current_date, time=current_time, was_read=False, message=message,
+                                    short_message=short_message, header=header, short_header=short_header)
+    db.session.add(new_notification)
+    db.session.commit()
+    add_one_to_notification_counter(current_user.public_id)
+    return jsonify({'message': 'New barber created!'})
