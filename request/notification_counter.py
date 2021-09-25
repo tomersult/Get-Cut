@@ -11,16 +11,18 @@ class NotificationCounter(db.Model):
 notification_counter_bp = Blueprint('account_api_notification_counter', __name__)
 
 
-def reset_notification_counter(user_public_id):
-    notification_counter = NotificationCounter.query.filter_by(user_public_id=user_public_id).first()
-    notification_counter.counter = 0
-    db.session.commit()
-    return jsonify({'message': 'Notification counter reset!'})
-
-
 def add_one_to_notification_counter(user_public_id):
     notification_counter = NotificationCounter.query.filter_by(user_public_id=user_public_id).first()
     if not notification_counter:
         return jsonify({'message': 'This user does not have counter!'})
     notification_counter.counter += 1
     db.session.commit()
+
+
+@notification_counter_bp.route('/notificationsCounter', methods=['PUT'])
+def reset_notification_counter():
+    user_public_id = request.args.get('user_public_id')
+    notification_counter = NotificationCounter.query.filter_by(user_public_id=user_public_id).first()
+    notification_counter.counter = 0
+    db.session.commit()
+    return jsonify({'message': 'Notification counter reset!'})

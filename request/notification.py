@@ -30,7 +30,7 @@ class Notification(db.Model):
 
 notification_bp = Blueprint('account_api_notification', __name__)
 
-
+# !
 @notification_bp.route('/notifications', methods=['GET'])
 @token_required
 def get_user_notifications(current_user):
@@ -44,8 +44,6 @@ def get_user_notifications(current_user):
     output["notifications"] = notification_list
     output['unseenNotification'] = notification_counter.counter
     for notification in notifications:
-        # reset notification counter of this user
-        reset_notification_counter(current_user.public_id)
         barber = Barber.query.filter_by(public_id=notification.barber_public_id).first()
         try:
             with open(current_app.config['BARBER_PROFILE_IMAGE_PATH'] + barber.picture, "rb") as image_file:
