@@ -61,6 +61,8 @@ def get_user_notifications(current_user):
         notification_data['wasRead'] = notification.was_read
         notification_data['message'] = notification.message
         notification_data['shortMessage'] = notification.short_message
+        notification_data['header'] = notification.message
+        notification_data['shortHeader'] = notification.short_message
         output["notifications"].append(notification_data)
     return jsonify(output)
 
