@@ -79,20 +79,21 @@ def get_all_haircut(current_barber):
         if current_barber.public_id == haircut.barber_public_id:
             if haircut.gender == 'male':
                 haircuts = {}
-                haircuts['barber_public_id'] = haircut.barber_public_id
+                haircuts['id'] = haircut.id
                 haircuts['name'] = haircut.name
-                haircuts['time'] = haircut.time
-                haircuts['price'] = haircut.price
+                haircuts['time'] = int(haircut.time)
+                haircuts['price'] = int(haircut.price)
                 male_output.append(haircuts)
             if haircut.gender == 'female':
                 haircuts = {}
-                haircuts['barber_public_id'] = haircut.barber_public_id
+                haircuts['id'] = haircut.id
                 haircuts['name'] = haircut.name
-                haircuts['time'] = haircut.time
-                haircuts['price'] = haircut.price
+                haircuts['time'] = int(haircut.time)
+                haircuts['price'] = int(haircut.price)
                 female_output.append(haircuts)
 
-    return jsonify({'male': male_output}, {'female': female_output})
+    ret = jsonify({"male":male_output,"female":female_output})
+    return ret
 
 
 @barber_haircut_bp.route('/deleteHaircut', methods=['DELETE'])

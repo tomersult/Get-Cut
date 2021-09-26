@@ -53,7 +53,7 @@ def get_user_notifications(current_user):
             return jsonify({'message': 'barber dont have profile image!'})
 
         notification_data = {}
-        notification_data['id'] = notification.barber_public_id
+        notification_data['id'] = notification.id
         notification_data['barberName'] = notification.barber_name
         notification_data['barberAvatar'] = str(encoded_string)
         notification_data['date'] = notification.date
