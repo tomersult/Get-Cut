@@ -145,8 +145,12 @@ def delete_appointment():
         return jsonify({'message': 'This barber not available!'})
 
     creation_time = datetime.datetime.now()
+
+    start_time_string = appointment.start
+    start_time_string = start_time_string.split('-')[0]
+
     # initialize the start time of the appointment
-    start_time = datetime.datetime.strptime(appointment.start, '%H:%M')
+    start_time = datetime.datetime.strptime(start_time_string, '%H:%M')
     temp_time = creation_time.replace(minute=start_time.minute, hour=start_time.hour, second=0, microsecond=0,
                                       year=int(appointment.year), month=int(appointment.month), day=int(appointment.day))
     # every time cycle is 15 min
