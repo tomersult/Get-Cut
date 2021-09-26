@@ -95,12 +95,28 @@ def get_hours(current_barber):
     day = request.args.get('day')
     month = request.args.get('month')
     year = request.args.get('year')
+    amount_of_time = request.args.get('amountOfTime')
+    output = []
     hours = DayBook.query.filter_by(barber_public_id=current_barber.public_id, day=day, month=month,
                                     year=year).first()
     if not hours:
         return jsonify({'message': 'This barber do not work in this day!'})
 
-    output = check_availability(hours)
+    hours_dict = dict((col, getattr(hours, col)) for col in hours.__table__.columns.keys())
+    hours_dict.pop('barber_public_id')
+    hours_dict.pop('day')
+    hours_dict.pop('month')
+    hours_dict.pop('year')
+    hours_dict.pop('id')
+
+    num_time_cycle = number_of_time_cycles(int(amount_of_time))
+    for key, value in hours_dict.items():
+        fit_bool = check_if_this_hour_fit(hours_dict, key, num_time_cycle)
+        if fit_bool:
+            start_time_string = find_start_time(key)
+            end_time_string = appointment_amount_of_time(start_time_string, amount_of_time)
+            time_string = start_time_string + '-' + end_time_string
+            output.append(time_string)
     return jsonify(output)
 
 
@@ -112,6 +128,211 @@ def update(current_barber):
     db.session.commit()
 
     return jsonify({'message': 'New day created!'})
+
+
+def find_start_time(key):
+    if key == 't7_0':
+        return '07:00'
+    if key == 't7_15':
+        return '07:15'
+    if key == 't7_30':
+        return '07:30'
+    if key == 't7_45':
+        return '07:45'
+
+    if key == 't8_0':
+        return '08:00'
+    if key == 't8_15':
+        return '08:15'
+    if key == 't8_30':
+        return '08:30'
+    if key == 't8_45':
+        return '08:45'
+
+    if key == 't9_0':
+        return '09:00'
+    if key == 't9_15':
+        return '09:15'
+    if key == 't9_30':
+        return '09:30'
+    if key == 't9_45':
+        return '09:45'
+
+    if key == 't10_0':
+        return '10:00'
+    if key == 't10_15':
+        return '10:15'
+    if key == 't10_30':
+        return '10:30'
+    if key == 't10_45':
+        return '10:45'
+
+    if key == 't11_0':
+        return '11:00'
+    if key == 't11_15':
+        return '11:15'
+    if key == 't11_30':
+        return '11:30'
+    if key == 't11_45':
+        return '11:45'
+
+    if key == 't12_0':
+        return '12:00'
+    if key == 't12_15':
+        return '12:15'
+    if key == 't12_30':
+        return '12:30'
+    if key == 't12_45':
+        return '12:45'
+
+    if key == 't13_0':
+        return '13:00'
+    if key == 't13_15':
+        return '13:15'
+    if key == 't13_30':
+        return '13:30'
+    if key == 't13_45':
+        return '13:45'
+
+    if key == 't14_0':
+        return '14:00'
+    if key == 't14_15':
+        return '14:15'
+    if key == 't14_30':
+        return '14:30'
+    if key == 't14_45':
+        return '14:45'
+
+    if key == 't15_0':
+        return '15:00'
+    if key == 't15_15':
+        return '15:15'
+    if key == 't15_30':
+        return '15:30'
+    if key == 't15_45':
+        return '15:45'
+
+    if key == 't16_0':
+        return '16:00'
+    if key == 't16_15':
+        return '16:15'
+    if key == 't16_30':
+        return '16:30'
+    if key == 't16_45':
+        return '16:45'
+
+    if key == 't17_0':
+        return '17:00'
+    if key == 't17_15':
+        return '17:15'
+    if key == 't17_30':
+        return '17:30'
+    if key == 't17_45':
+        return '17:45'
+
+    if key == 't18_0':
+        return '18:00'
+    if key == 't18_15':
+        return '18:15'
+    if key == 't18_30':
+        return '18:30'
+    if key == 't18_45':
+        return '18:45'
+
+    if key == 't19_0':
+        return '19:00'
+    if key == 't19_15':
+        return '19:15'
+    if key == 't19_30':
+        return '19:30'
+    if key == 't19_45':
+        return '19:45'
+
+    if key == 't20_0':
+        return '20:00'
+    if key == 't20_15':
+        return '20:15'
+    if key == 't20_30':
+        return '20:30'
+    if key == 't20_45':
+        return '20:45'
+
+    if key == 't21_0':
+        return '21:00'
+    if key == 't21_15':
+        return '21:15'
+    if key == 't21_30':
+        return '21:30'
+    if key == 't21_45':
+        return '21:45'
+
+    if key == 't22_0':
+        return '22:00'
+    if key == 't22_15':
+        return '22:15'
+    if key == 't22_30':
+        return '22:30'
+    if key == 't22_45':
+        return '22:45'
+
+    return ''
+
+
+def check_if_this_hour_fit(hours_dict, my_key, num_time_cycle):
+    counter = 0
+    flag = 0
+    hours_to_check = []
+    for key, value in hours_dict.items():
+        if counter == num_time_cycle:
+            break
+
+        if key == my_key:
+            flag = 1
+            hours_to_check.append(value)
+            counter += 1
+            continue
+
+        if flag == 0:
+            continue
+        else:
+            hours_to_check.append(value)
+            counter += 1
+
+    for val in hours_to_check:
+        if val:
+            return False
+    return True
+
+
+def number_of_time_cycles(appointment_len):
+    num_of_time_cycles = 0
+    if appointment_len == 15:
+        num_of_time_cycles += 1
+    if appointment_len == 30:
+        num_of_time_cycles += 2
+    if appointment_len == 45:
+        num_of_time_cycles += 3
+    if appointment_len == 60:
+        num_of_time_cycles += 4
+    if appointment_len == 75:
+        num_of_time_cycles += 5
+    if appointment_len == 90:
+        num_of_time_cycles += 6
+    if appointment_len == 105:
+        num_of_time_cycles += 7
+    if appointment_len == 120:
+        num_of_time_cycles += 8
+    if appointment_len == 135:
+        num_of_time_cycles += 9
+    if appointment_len == 150:
+        num_of_time_cycles += 10
+    if appointment_len == 165:
+        num_of_time_cycles += 11
+    if appointment_len == 180:
+        num_of_time_cycles += 12
+    if appointment_len == 195:
+        num_of_time_cycles += 13
+    return num_of_time_cycles
 
 
 def check_availability(hours):
@@ -450,7 +671,6 @@ def appointment_amount_of_time(start_time, appointment_len):
         hour_id = 0
     if start_time == "7:15" or start_time == "07:15":
         hour_id = 1
-        db.session.commit()
     if start_time == "7:30" or start_time == "07:30":
         hour_id = 2
     if start_time == "7:45" or start_time == "07:45":
@@ -597,7 +817,6 @@ def appointment_amount_of_time(start_time, appointment_len):
         end_time = "07:00"
     if hour_id == 1:
         end_time = "07:15"
-        db.session.commit()
     if hour_id == 2:
         end_time = "07:30"
     if hour_id == 3:

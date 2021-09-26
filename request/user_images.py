@@ -62,6 +62,7 @@ def get_all_user_images(current_user):
         return jsonify({'message': 'This user still not upload an image!'})
 
     output = []
+    images = reversed(images)
     for image in images:
         with open(current_app.config['USER_IMAGE_UPLOAD_PATH'] + image.image_name, "rb") as image_file:
             encoded_string = base64.b64encode(image_file.read())

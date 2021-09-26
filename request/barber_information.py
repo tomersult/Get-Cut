@@ -76,8 +76,9 @@ def create_info(current_barber):
     close_hour = data[2]['close_hour']
     # create days in daybook (the barber chose how much)
     for i in range(14):
-        new_day = DayBook(barber_public_id=current_barber.public_id, day=(temp_time.day + i), month=temp_time.month,
-                          year=temp_time.year)
+        temp_date = temp_time + datetime.timedelta(days=i)
+        new_day = DayBook(barber_public_id=current_barber.public_id, day=temp_date.day,
+                          month=temp_date.month, year=temp_date.year)
         db.session.add(new_day)
         db.session.commit()
         # create one day
@@ -140,7 +141,7 @@ def daybook_plus_day():
             close_day_num = open_day_num + 7
             my_day_time = creation_time + datetime.timedelta(days=14 + 1)
             new_day = DayBook(barber_public_id=barber.barber_public_id,
-                              day=str(creation_time.day + 14 + 1),
+                              day=str(my_day_time.day),
                               month=my_day_time.month,
                               year=my_day_time.year)
             db.session.add(new_day)
