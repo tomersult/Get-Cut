@@ -14,6 +14,7 @@ class BarberHairCut(db.Model):
     time = db.Column(db.String(20))
     price = db.Column(db.String(20))
     gender = db.Column(db.String(20))
+    hair_cut_id = db.Column(db.Integer)
 
 
 @barber_haircut_bp.route('/addHairCut', methods=['POST'])
@@ -79,20 +80,21 @@ def get_all_haircut(current_barber):
         if current_barber.public_id == haircut.barber_public_id:
             if haircut.gender == 'male':
                 haircuts = {}
-                haircuts['barber_public_id'] = haircut.barber_public_id
+                haircuts['id'] = haircut.hair_cut_id
                 haircuts['name'] = haircut.name
-                haircuts['time'] = haircut.time
-                haircuts['price'] = haircut.price
+                haircuts['time'] = int(haircut.time)
+                haircuts['price'] = int(haircut.price)
                 male_output.append(haircuts)
             if haircut.gender == 'female':
                 haircuts = {}
-                haircuts['barber_public_id'] = haircut.barber_public_id
+                haircuts['id'] = haircut.hair_cut_id
                 haircuts['name'] = haircut.name
-                haircuts['time'] = haircut.time
-                haircuts['price'] = haircut.price
+                haircuts['time'] = int(haircut.time)
+                haircuts['price'] = int(haircut.price)
                 female_output.append(haircuts)
 
-    return jsonify({'male': male_output}, {'female': female_output})
+    ret = jsonify({"male":male_output,"female":female_output})
+    return ret
 
 
 @barber_haircut_bp.route('/deleteHaircut', methods=['DELETE'])
