@@ -1,11 +1,9 @@
 import base64
 import datetime
 from flask import Blueprint, current_app
-from flask import jsonify
 from database import db
 from request.barber import Barber
-from request.notification_counter import add_one_to_notification_counter, reset_notification_counter, \
-    NotificationCounter
+from request.notification_counter import add_one_to_notification_counter, NotificationCounter
 from request.user import User, token_required
 from request.appointment import Appointment
 import schedule
@@ -30,6 +28,71 @@ class Notification(db.Model):
 
 
 notification_bp = Blueprint('account_api_notification', __name__)
+
+
+@notification_bp.route('/auto', methods=['GET'])
+def check_every_user_notification():
+    users = User.query.all()
+    for user in users:
+        # predict new notifications for each user
+        notifications = predict_new_appointment(user)
+        if not notifications:
+            print(user.name + ' does not have notifications today')
+        else:
+            # create new notification
+            for appointment in notifications:
+                barber = Barber.query.filter_by(public_id=appointment.barber_public_id).first()
+                user = User.query.filter_by(public_id=appointment.user_public_id).first()
+                current_date = str(datetime.datetime.today().date())
+                current_time = str(datetime.datetime.today().time().replace(microsecond=0))
+                message = 'Hello ' + user.name + '! ' + 'I noticed you did not make a ' + appointment.haircut_type + \
+                          'in a long time - get in to my page and schedule an appointment today!'
+                short_message = 'time to get a ' + appointment.haircut_type
+                short_header = 'New message from '
+                header = 'Time to make an appointment !'
+                new_notification = Notification(barber_public_id=barber.public_id, barber_name=barber.barber_name,
+                                                barber_avatar=barber.picture, user_public_id=user.public_id,
+                                                date=current_date, time=current_time, was_read=False, message=message,
+                                                short_message=short_message, header=header, short_header=short_header)
+                db.session.add(new_notification)
+                db.session.commit()
+                add_one_to_notification_counter(user.public_id)
+    return jsonify({'message': 'Sent all the relevant notification !'})
+
+
+def predict_new_appointment(current_user):
+    appointments = Appointment.query.filter_by(user_public_id=current_user.public_id).all()
+    centroids = {}
+    counter_for_cen = 0
+    for appointment in appointments:
+        # check that the notification will create from the past appointments
+        present = datetime.datetime.now()
+        day = datetime.datetime(int(appointment.year), int(appointment.month), int(appointment.day))
+        # add centroid for each haircut type in the same barber
+        if day < present:
+            if not centroids:
+                centroids[counter_for_cen] = {'centroid': appointment.haircut_type + appointment.barber_public_id,
+                                              'cluster': [appointment]}
+                counter_for_cen += 1
+
+            else:
+                for key, value in centroids.items():
+                    if value['centroid'] == appointment.haircut_type + appointment.barber_public_id:
+                        my_key = key
+                centroids[my_key]['cluster'].append(appointment)
+
+    notifications = []
+    for key, value in centroids.items():
+        # check what the average time for each centroid and when was the last appointment from this centroid
+        time_cycle, closest_appointment = calculate_time_cycle(value['cluster'])
+        current_day = datetime.datetime.now()
+        latest_appointment_date = datetime.datetime(int(closest_appointment.year), int(closest_appointment.month),
+                                                    int(closest_appointment.day))
+        latest_date_and_time_cycle = latest_appointment_date + datetime.timedelta(days=time_cycle)
+        # check if tomorrow the time cycle need to end from the last appointment
+        if (current_day - latest_date_and_time_cycle).days == 1:
+            notifications.append(closest_appointment)
+    return notifications
 
 
 @notification_bp.route('/notifications', methods=['GET'])
@@ -67,37 +130,6 @@ def get_user_notifications(current_user):
     return jsonify(output)
 
 
-def predict_new_appointment(current_user):
-    appointments = Appointment.query.filter_by(user_public_id=current_user.public_id).all()
-    centroids = {}
-    counter_for_cen = 0
-    for appointment in appointments:
-        present = datetime.datetime.now()
-        day = datetime.datetime(int(appointment.year), int(appointment.month), int(appointment.day))
-        if day < present:
-            if not centroids:
-                centroids[counter_for_cen] = {'centroid': appointment.haircut_type + appointment.barber_public_id,
-                                              'cluster': [appointment]}
-                counter_for_cen += 1
-
-            else:
-                for key, value in centroids.items():
-                    if value['centroid'] == appointment.haircut_type + appointment.barber_public_id:
-                        my_key = key
-                centroids[my_key]['cluster'].append(appointment)
-
-    notifications = []
-    for key, value in centroids.items():
-        time_cycle, closest_appointment = calculate_time_cycle(value['cluster'])
-        current_day = datetime.datetime.now()
-        latest_appointment_date = datetime.datetime(int(closest_appointment.year), int(closest_appointment.month),
-                                                    int(closest_appointment.day))
-        latest_date_and_time_cycle = latest_appointment_date + datetime.timedelta(days=time_cycle)
-        if (current_day - latest_date_and_time_cycle).days == 1:
-            notifications.append(closest_appointment)
-    return notifications
-
-
 def calculate_time_cycle(appointments):
     if len(appointments) == 1:
         return -1, appointments[0]
@@ -124,34 +156,6 @@ def calculate_time_cycle(appointments):
     return time_cycle, closest_day[1]
 
 
-@notification_bp.route('/auto', methods=['GET'])
-def check_every_user_notification():
-    users = User.query.all()
-    for user in users:
-        notifications = predict_new_appointment(user)
-        if not notifications:
-            print(user.name + ' does not have notifications today')
-        else:
-            for appointment in notifications:
-                barber = Barber.query.filter_by(public_id=appointment.barber_public_id).first()
-                user = User.query.filter_by(public_id=appointment.user_public_id).first()
-                current_date = str(datetime.datetime.today().date())
-                current_time = str(datetime.datetime.today().time().replace(microsecond=0))
-                message = 'Hello ' + user.name + '! ' + 'I noticed you did not make a ' + appointment.haircut_type + \
-                          'in a long time - get in to my page and schedule an appointment today!'
-                short_message = 'time to get a ' + appointment.haircut_type
-                short_header = 'New message from '
-                header = 'Time to make an appointment !'
-                new_notification = Notification(barber_public_id=barber.public_id, barber_name=barber.barber_name,
-                                                barber_avatar=barber.picture, user_public_id=user.public_id,
-                                                date=current_date, time=current_time, was_read=False, message=message,
-                                                short_message=short_message, header=header, short_header=short_header)
-                db.session.add(new_notification)
-                db.session.commit()
-                add_one_to_notification_counter(user.public_id)
-    return jsonify({'message': 'Sent all the relevant notification !'})
-
-
 @notification_bp.route('/seenNotification', methods=['PUT'])
 def unseen_to_seen():
     notification_id = int(request.args.get('notification_id'))
@@ -166,18 +170,20 @@ def unseen_to_seen():
 
 
 def auto_request():
+    # send the requests
     requests.get('http://127.0.0.1:5000/auto')
     requests.get('http://127.0.0.1:5000/daybookPlusDay')
 
 
 def auto_func_for_notification():
+    # every day at 19:22 add new day to daybook and search for each user new notifications
     schedule.every().day.at("19:22").do(auto_request)
     while True:
         schedule.run_pending()
         time.sleep(61)
 
 
-# need to delete
+# for checks
 @notification_bp.route('/createNotification', methods=['POST'])
 @token_required
 def create_new_notification(current_user):
