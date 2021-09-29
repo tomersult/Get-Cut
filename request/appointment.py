@@ -77,11 +77,18 @@ def get_user_appointments(current_user):
     future_appointments = []
 
     for appointment in appointments:
+        time_for_date_time = appointment.start
+        time_for_date_time = time_for_date_time.split('-')[0]
+        hours_for_date_time = time_for_date_time.split(':')[0]
+        minutes_for_date_time = time_for_date_time.split(':')[1]
         haircut_type = appointment.haircut_type.split(',')
         barber = Barber.query.filter_by(public_id=appointment.barber_public_id).first()
         barber_name = barber.barber_name
         appointment_data = {}
         date = {}
+        day = datetime.datetime(int(appointment.year), int(appointment.month), int(appointment.day),
+                                int(hours_for_date_time), int(minutes_for_date_time))
+        appointment_data['date_time'] = day
         date['day'] = appointment.day
         date['month'] = appointment.month
         date['year'] = appointment.year
@@ -95,11 +102,12 @@ def get_user_appointments(current_user):
         appointment_data['barberName'] = barber_name
         appointment_data['appointmentId'] = appointment.id
         present = datetime.datetime.now()
-        day = datetime.datetime(int(appointment.year), int(appointment.month), int(appointment.day))
         if day < present:
             past_appointments.append(appointment_data)
         else:
             future_appointments.append(appointment_data)
+    past_appointments.sort(key=lambda item:item['date_time'], reverse=True)
+    future_appointments.sort(key=lambda item: item['date_time'], reverse=True)
     output["past"] = past_appointments
     output['future'] = future_appointments
 

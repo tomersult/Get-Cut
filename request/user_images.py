@@ -45,7 +45,7 @@ def add_image(current_user):
     image = base64.b64decode(str(data['image']))
     image_path = (current_app.config['USER_IMAGE_UPLOAD_PATH'] + file_name)
     img = Image.open(io.BytesIO(image))
-    img.save(image_path, 'png')
+    img.save(image_path, 'jpeg')
 
     new_user_image = UserImages(user_public_id=current_user.public_id, image_name=file_name,
                                 description=data['description'])
