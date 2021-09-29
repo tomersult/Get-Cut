@@ -99,6 +99,7 @@ def predict_new_appointment(current_user):
 @token_required
 def get_user_notifications(current_user):
     notifications = Notification.query.filter_by(user_public_id=current_user.public_id).all()
+    notifications = reversed(notifications)
     if not notifications:
         return jsonify({'message': 'This user does not have notifications yet'})
 
