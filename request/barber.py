@@ -142,9 +142,6 @@ def get_my_city_barbers(user_public_id):
     barbers = Barber.query.filter_by(location=user_public_id.city).all()
     from request.favorites import Favorite
     output = []
-    exact_location = {}
-    summary = {}
-
     for barber in barbers:
         try:
             with open(current_app.config['BARBER_PROFILE_IMAGE_PATH'] + barber.picture, "rb") as image_file:
@@ -156,6 +153,8 @@ def get_my_city_barbers(user_public_id):
         if not favorite:
             favorite_bool = False
         barber_data = {}
+        summary={}
+        exact_location={}
         barber_data['id'] = barber.public_id
         barber_data['barberName'] = barber.barber_name
         barber_data['location'] = barber.location
@@ -166,7 +165,7 @@ def get_my_city_barbers(user_public_id):
         barber_data['followers'] = barber.followers
         barber_data['picture'] = str(encoded_string)
         barber_data['favorite'] = favorite_bool
-        summary['creation_time'] = barber.creation_time
+        summary['time'] = barber.creation_time
         summary['sentence'] = barber.sentence
         summary['headline'] = barber.headline
         barber_data['summary'] = summary

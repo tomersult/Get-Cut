@@ -23,7 +23,7 @@ class Notification(db.Model):
     date = db.Column(db.String(50))
     time = db.Column(db.String(50))
     was_read = db.Column(db.Boolean, unique=False, default=False)
-    message = db.Column(db.String(200))
+    message = db.Column(db.String(500))
     short_message = db.Column(db.String(50))
     short_header = db.Column(db.String(30))
     header = db.Column(db.String(50))
