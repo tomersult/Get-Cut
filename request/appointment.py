@@ -106,8 +106,8 @@ def get_user_appointments(current_user):
             past_appointments.append(appointment_data)
         else:
             future_appointments.append(appointment_data)
-    past_appointments.sort(key=lambda item:item['date_time'], reverse=True)
-    future_appointments.sort(key=lambda item: item['date_time'], reverse=True)
+    past_appointments.sort(key=lambda item:item['date_time'], reverse=False)
+    future_appointments.sort(key=lambda item: item['date_time'], reverse=False)
     output["past"] = past_appointments
     output['future'] = future_appointments
 
